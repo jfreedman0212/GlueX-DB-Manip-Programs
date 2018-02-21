@@ -1,6 +1,6 @@
 # query.py
 A command line program that manipulates the GlueX Metadata Database using SQLAlchemy.
-The schema of the database is laid out in the "gluex metadata classes.py" file.
+The schema of the database is laid out in the "gluex_metadata_classes.py" file.
 # how to use it
 ./query.py tablename flags
 
