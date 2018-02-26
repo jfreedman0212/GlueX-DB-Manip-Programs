@@ -33,4 +33,4 @@ flags are:
 	--version: prints the version number
 
 # DataSetManip.py
-!!! edit this when done with the first version of DataSetManip.py !!!
+Coming soon
