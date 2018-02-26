@@ -2,6 +2,8 @@
 
 ##################################################################################
 # query.py: command line program that can manipulate the GlueX Metadata Database #
+# 	    written by Joshua Freedman						 #
+# usage: ./query.py <table> <flags>						 #
 #	table:			      the table that is edited(required)         #
 # 	-a:			      add an empty field	        	 #
 #	-d <index>: 		      delete a field at <index>			 #
@@ -11,14 +13,16 @@
 #	-v,--verbose: 		      also take a verbose command		 #
 #	--version: 		      prints out the version number		 #
 ##################################################################################
+import os
+import consts # stores the name to the environment variable
 import argparse
 from pydoc import locate
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from gluex_metadata_classes import Base,DataType,RunPeriod,SoftwareVersion,JanaConfig,JanaCalibContext,DataSet  
+from gluex_metadata_classes import * 
 
 # sqlalchemy setup
-engine = create_engine('sqlite:///gluex_metadata.db') #this can be changed to any database, or even made to change during runtime (not sure yet)
+engine = create_engine('sqlite:///{}'.format(str(os.environ[consts.DB_ENV_VAR]))) 
 Base.metadata.bind = engine
 DBSession = sessionmaker(bind=engine)
 session = DBSession()

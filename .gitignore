@@ -1,0 +1,5 @@
+# compiled python file
+*.pyc
+
+# the gluex database for testing (and potentially for later use)
+*.db
