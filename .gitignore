@@ -3,3 +3,6 @@
 
 # the gluex database for testing (and potentially for later use)
 *.db
+
+# vim swap files
+*.swp
