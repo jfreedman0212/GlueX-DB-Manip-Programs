@@ -8,19 +8,8 @@
 ###############################################################################
 
 # import dependencies
-import os
-import consts # has the name for the env variable to the database file
 import argparse
-from pydoc import locate
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 from gluex_metadata_classes import * 
-
-# sqlalchemy setup
-engine = create_engine('sqlite:///{}'.format(os.environ[consts.DB_ENV_VAR])) 
-Base.metadata.bind = engine
-DBSession = sessionmaker(bind=engine)
-session = DBSession()
 
 # argparse setup
 parser = argparse.ArgumentParser(description='Creates/Lists DataSets')
@@ -29,6 +18,7 @@ parser.add_argument('-c',metavar=('nickName','dataType','revision','runPeriod','
 		    nargs=7,help='creates a new DataSet with the specified values for each attribute of it')
 parser.add_argument('-f',metavar='pathToFile',help='creates several DataSets from the specified file (file should be in format of -c flag)')
 parser.add_argument('-l','--list',action='store_true',help='lists all of the DataSets in a user-friendly format')
+parser.add_argument('-v','--verbose',action='store_true',help='makes output more descriptive')
 args = parser.parse_args()
 
 # runs the modification procedures first, then the display procedure 
@@ -36,7 +26,16 @@ args = parser.parse_args()
 
 # procedures for the -s (set env var) flag
 if args.s is not None:
-	pass
+	if os.path.isfile(args.s):
+		if args.verbose:
+			print 'Old value: {}'.format(os.environ[consts.DB_ENV_VAR])
+		os.environ[consts.DB_ENV_VAR] = args.s
+		if args.verbose:
+			print 'New value: {}'.format(os.environ[consts.DB_ENV_VAR])
+	elif args.verbose:
+		print '{} does not exist, try again.'.format(args.s)
+
+	# next step: change the env variable permanently AND change the db for SQLAlchemy
 
 # procedures for the -c (create DataSet) flag
 if args.c is not None:
@@ -51,6 +50,7 @@ session.commit()
 
 #procedures for the -l,--list flag
 if args.list:
-	pass
+	for i in range(1,session.query(DataSet).count()+1):
+		print session.query(DataSet).filter_by(id=i).first()
 
 session.close()

@@ -13,19 +13,11 @@
 #	-v,--verbose: 		      also take a verbose command		 #
 #	--version: 		      prints out the version number		 #
 ##################################################################################
-import os
-import consts # stores the name to the environment variable
+
+# import dependencies
 import argparse
 from pydoc import locate
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 from gluex_metadata_classes import * 
-
-# sqlalchemy setup
-engine = create_engine('sqlite:///{}'.format(str(os.environ[consts.DB_ENV_VAR]))) 
-Base.metadata.bind = engine
-DBSession = sessionmaker(bind=engine)
-session = DBSession()
 
 # argparse setup
 parser = argparse.ArgumentParser(description='Manipulates/retrieves data from the GlueX Metadata Database')
