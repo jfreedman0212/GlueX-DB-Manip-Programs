@@ -26,7 +26,7 @@ args = parser.parse_args()
 
 # procedures for the -s (set env var) flag
 if args.s is not None:
-	if os.path.isfile(args.s):
+	if os.path.isfile(args.s) and '.db' in args.s:
 		if args.verbose:
 			print 'Old value: {}'.format(os.environ[consts.DB_ENV_VAR])
 		os.environ[consts.DB_ENV_VAR] = args.s
@@ -39,7 +39,13 @@ if args.s is not None:
 
 # procedures for the -c (create DataSet) flag
 if args.c is not None:
-	pass
+	dataTypeIndex = session.query(DataType).filter_by(name=args.c[1]).first().id
+	runPeriodIndex = session.query(RunPeriod).filter_by(name=args.c[3]).first().id
+	softwareVersId = session.query(SoftwareVersion).filter_by(name=args.c[4]).first().id
+	janaConfigId = session.query(JanaConfig).filter_by(name=args.c[5]).first().id
+	janaCalibContextId = session.query(JanaCalibContext).filter_by(value=args.c[6]).first().id
+
+	session.add(DataSet(args.c[0],dataTypeIndex,args.c[2],runPeriodIndex,softwareVersId,janaConfigId,janaCalibContextId))
 
 # procedures for the -f (create DataSets from file) flag
 if args.f is not None:
