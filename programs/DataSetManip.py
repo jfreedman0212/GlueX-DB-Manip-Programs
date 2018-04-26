@@ -56,7 +56,7 @@ session.commit()
 
 #procedures for the -l,--list flag
 if args.list:
-	for i in range(1,session.query(DataSet).count()+1):
-		print session.query(DataSet).filter_by(id=i).first()
+	for i in session.query(DataSet).all():
+		print i
 
 session.close()
