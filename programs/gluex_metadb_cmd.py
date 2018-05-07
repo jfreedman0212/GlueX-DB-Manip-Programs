@@ -11,6 +11,11 @@
 import argparse
 from gluex_metadata_classes import * 
 
+# generating a tuple to be used by the 'metavar' attribute of the create argument,
+# will also be used in the actual create process
+#attributes = [a for a in dir(DataSet()) if not a.startswith('_') and not 'Id' in a and not callable(getattr(DataSet(),a)) and a is not 'metadata']
+
+
 # argparse setup
 parser = argparse.ArgumentParser(description='Creates/Lists DataSets')
 parser.add_argument('-s',metavar='pathToDB',help='changes the environment variable for the DB file to the specified pathname')

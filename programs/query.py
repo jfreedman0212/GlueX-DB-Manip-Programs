@@ -64,13 +64,14 @@ if args.e is not None:
 # run the retrieve procedures
 # POTENTIAL UPDATE: -r takes a range as x,y and it prints out all records with ids in that range
 if args.r is not None:
-	for i in range(1,args.r):
+	"""for i in range(1,args.r):
 		if i in range(1,session.query(locate('gluex_metadata_classes.'+args.table)).count()+1):
 			print session.query(locate('gluex_metadata_classes.'+args.table)).filter_by(id=i).first()
 		else:
 			print 'End of table'
 			break
-
+	"""
+	print session.query(locate('gluex_metadata_classes.'+args.table)).filter_by(id=args.r).first()	
 # commits all changes at the end
 # should there be a commit() during every function?
 session.commit()

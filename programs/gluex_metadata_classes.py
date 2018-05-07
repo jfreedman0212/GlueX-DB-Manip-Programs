@@ -1,4 +1,10 @@
-# these classes define the data for the gluex database
+###############################################################################
+# gluex_metadata_classes.py - the SQLAlchemy classes that describe the        #
+#			      GlueX Metadata Database. Also contains a class  #
+#			      that allows easy interaction with the Database. #
+# Written by Joshua Freedman						      #
+###############################################################################
+
 import os
 import sys
 import consts
@@ -24,6 +30,8 @@ class DataType(Base):
 		super(DataType,self).__init__()
 		self.name = n
 		self.comment = c
+	def __iter__(self):
+		return self
 class RunPeriod(Base):
 	__tablename__ = 'RunPeriod'
 	id = Column(Integer, primary_key=True)
@@ -80,6 +88,7 @@ class DataSet(Base):
 
 	# the remaining class members represent the DataSet table's relationships with the other tables
 	# if you want to add another table that DataSet relates to, create the class like the ones above
+	# and create a relationship between the two like the ones below
 
 	dataTypeId = Column(Integer,ForeignKey('DataType.id'))
 	DataType = relationship('DataType',back_populates='DataSets')
@@ -97,7 +106,7 @@ class DataSet(Base):
 	JanaCalibContext = relationship('JanaCalibContext',back_populates='DataSets')
 
 	# class methods
-	def __init__(self,nname='No Name',dtid=1,rev='ver00',rpid=1,sftwrverid=1,jcid=1,jccid=1):
+	def __init__(self,nname='No Name',dtid=None,rev='No Version Specified',rpid=None,sftwrverid=None,jcid=None,jccid=None):
 		self.nickname = nname
 		self.dataTypeId = dtid
 		self.revision = rev
@@ -110,6 +119,29 @@ class DataSet(Base):
 		outputString = 'id:{}'.format(self.id)
 		outputString += 'nickname: {}'.format(self.nickname)
 #		outputString += ''.format(
+
+# DatabaseConnection class, wraps around a SQLAlchemy session so the user does not
+# need to interact with the session or the engine, just this object
+class DatabaseConnection:
+	# private member data
+	_session = None
+	_engine = None
+	
+	def __init__(self):
+		pass
+
+	def createData(self):
+		pass
+	
+	def removeData(self):
+		pass
+
+	def changeDatabaseFile(self,newFile):
+		pass
+
+	def retrieveData(self):
+		pass
+
 
 
 #engine setup
