@@ -30,8 +30,6 @@ class DataType(Base):
 		super(DataType,self).__init__()
 		self.name = n
 		self.comment = c
-	def __iter__(self):
-		return self
 class RunPeriod(Base):
 	__tablename__ = 'RunPeriod'
 	id = Column(Integer, primary_key=True)
@@ -106,44 +104,28 @@ class DataSet(Base):
 	JanaCalibContext = relationship('JanaCalibContext',back_populates='DataSets')
 
 	# class methods
-	def __init__(self,nname='No Name',dtid=None,rev='No Version Specified',rpid=None,sftwrverid=None,jcid=None,jccid=None):
+	def __init__(self,nname='No Name',dtid=0,rev='No Version Specified',rpid=0,sftwrverid=0,jcid=0,jccid=0):
+		super(DataSet,self).__init__()
 		self.nickname = nname
 		self.dataTypeId = dtid
+		self.DataType = None
 		self.revision = rev
 		self.runPeriodId = rpid
+		self.RunPeriod = None
 		self.softwareVersionId = sftwrverid
+		self.SoftwareVersion = None
 		self.janaConfigId = jcid
+		self.JanaConfig = None
 		self.janaCalibContextId = jccid
+		self.JanaCalibContext = None
 
-	def getString(self,session):
-		outputString = 'id:{}'.format(self.id)
-		outputString += 'nickname: {}'.format(self.nickname)
-#		outputString += ''.format(
+	def __str__(self):
+		output = '{}|{}|{}|{}|{}|{}|{}|{}'.format(self.id,self.nickname,self.revision,self.DataType.name, \
+						   	  self.RunPeriod.name, self.SoftwareVersion.name, self.JanaConfig.name, \
+							  self.JanaCalibContext.value)
+		return output
 
-# DatabaseConnection class, wraps around a SQLAlchemy session so the user does not
-# need to interact with the session or the engine, just this object
-class DatabaseConnection:
-	# private member data
-	_session = None
-	_engine = None
-	
-	def __init__(self):
-		pass
-
-	def createData(self):
-		pass
-	
-	def removeData(self):
-		pass
-
-	def changeDatabaseFile(self,newFile):
-		pass
-
-	def retrieveData(self):
-		pass
-
-
-
+### TO BE DELETED ###
 #engine setup
 engine = create_engine('sqlite:///{}'.format(os.environ[consts.DB_ENV_VAR]))
 Base.metadata.create_all(engine)
