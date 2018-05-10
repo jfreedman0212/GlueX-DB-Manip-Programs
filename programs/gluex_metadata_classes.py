@@ -21,8 +21,6 @@ class DataType(Base):
 	id = Column(Integer, primary_key=True)
 	name = Column(String(250)) 
 	comment = Column(String(250))
-	# DataSets attribute holds all of the DataSets that have a specific instance of DataType as
-	# its DataType
 	DataSets = relationship('DataSet',back_populates='DataType')
 	def __str__(self):
 		return 'id: {}\nname: {}\ncomment: {}'.format(self.id,self.name,self.comment)
