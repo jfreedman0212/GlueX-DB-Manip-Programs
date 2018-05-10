@@ -15,7 +15,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 Base = declarative_base()
 
-# these are the sqlalchemy classes for the gluex database as laid out in the schema
+### these are the sqlalchemy classes for the metadata DB ###
+
 class DataType(Base):
 	__tablename__ = 'DataType'
 	id = Column(Integer, primary_key=True)
@@ -28,6 +29,7 @@ class DataType(Base):
 		super(DataType,self).__init__()
 		self.name = n
 		self.comment = c
+
 class RunPeriod(Base):
 	__tablename__ = 'RunPeriod'
 	id = Column(Integer, primary_key=True)
@@ -40,6 +42,7 @@ class RunPeriod(Base):
 		super(RunPeriod,self).__init__()
 		self.name = n
 		self.comment = c
+
 class SoftwareVersion(Base):
 	__tablename__ = 'SoftwareVersion'
 	id = Column(Integer, primary_key=True)
@@ -52,6 +55,7 @@ class SoftwareVersion(Base):
 		super(SoftwareVersion,self).__init__()
 		self.name = n
 		self.comment = c
+
 class JanaConfig(Base):
 	__tablename__ = 'JanaConfig'
 	id = Column(Integer, primary_key=True)
@@ -66,6 +70,7 @@ class JanaConfig(Base):
 		self.name = n
 		self.comment = c
 		self.content= ct
+
 class JanaCalibContext(Base):
 	__tablename__ = 'JanaCalibContext'
 	id = Column(Integer, primary_key = True)
@@ -76,6 +81,7 @@ class JanaCalibContext(Base):
 	def __init__(self,v='none'):
 		super(JanaCalibContext,self).__init__()
 		self.value = v
+
 class DataSet(Base):
 	__tablename__ = 'DataSet'
 	id = Column(Integer, primary_key=True)
@@ -123,7 +129,7 @@ class DataSet(Base):
 							  self.JanaCalibContext.value)
 		return output
 
-### TO BE DELETED ###
+### TO BE DELETED ONCE DATABASE CONNECTION CLASS IS IMPLEMENTED ###
 #engine setup
 engine = create_engine('sqlite:///{}'.format(os.environ[consts.DB_ENV_VAR]))
 Base.metadata.create_all(engine)
