@@ -1,7 +1,6 @@
 ###############################################################################
 # gluex_metadata_classes.py - the SQLAlchemy classes that describe the        #
-#			      GlueX Metadata Database. Also contains a class  #
-#			      that allows easy interaction with the Database. #
+#			      GlueX Metadata Database. 			      #
 # Written by Joshua Freedman						      #
 ###############################################################################
 
