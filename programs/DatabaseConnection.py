@@ -13,7 +13,7 @@ class DatabaseConnection:
 	_session_creator = None
 	_session = None
 	_engine = None
-	
+
 	### public member functions ###
 
 	# constructor
@@ -67,15 +67,20 @@ class DatabaseConnection:
 	# attr: the attribute of the table entry to be changed
 	# newValue: the new value of the attribute	
 	def update(self,table,index,attr,newValue):
-		# run update procedures
+		tableref = locate('gluex_metadata_classes.' + table)
+		updatedEntry = self._session.query(tableref).filter(tableref.id == index).first()
+		if getattr(updatedEntry,attr,None) is not None:
+			setattr(updatedEntry,attr,newValue)
+		else:
+			raise AttributeError('Table {} does not have attribute {}'.format(table,attr))
 		self._session.commit()
 
 	# deletes the specified row of the specified table
 	# table: the table being acted upon
 	# index: the id of the row being deleted
 	def remove(self,table,index):
-		deletedData = self._session.query(locate('gluex_metadata_classes.'+table))
-		deletedData.filter(locate('gluex_metadata_classes.'+table).id == index).delete()
+		tableref = locate('gluex_metadata_classes.' + table)
+		self._session.query(tableref).filter(tableref.id == index).delete()
 		self._session.commit()
 	
 	# returns all of the elements in a table with the specified value for the specified attribute
@@ -83,8 +88,8 @@ class DatabaseConnection:
 	# attr: the attribute that is trying to be matched
 	# key: the desired value for that specific attribute
 	def search(self,table,attr,key):
-		filterQuery = self._session.query(locate('gluex_metadata_classes.'+table)). \
-			filter(getattr(locate('gluex_metadata_classes.'+table),attr) == key)
+		tableref = locate('gluex_metadata_classes.'+table)
+		filterQuery = self._session.query(tableref).filter(getattr(tableref,attr) == key)
 		return filterQuery.all()
 	
 	# destructor to close the session whenever the object gets deleted
