@@ -17,9 +17,11 @@ class DatabaseConnection:
 	### public member functions ###
 
 	# constructor
-	# dialect: a string referring to the type of DB system being used (currently supports mysql and sqlite)
+	# dialect: a string referring to the type of DB 
+	#	   system being used (currently supports mysql and sqlite)
 	# 	   dialect defaults to sqlite if invalid
-	# pathToDB: a string that holds the path to the DB file, can be either relative or absolute
+	# pathToDB: a string that holds the path to the DB file
+	#	    can be either relative or absolute
 	def __init__(self,dialect,pathToDB=None):
 		# verifies the dialect is valid
 		# can add more supported dialects here if necessary
@@ -50,7 +52,13 @@ class DatabaseConnection:
 	# dictOfAttrs: dictionary of attributes that has a key-value pair
 	#	       that corresponds to specific table
 	def create(self,table,dictOfAttrs):
-		# run add procedures
+		newItem = locate('gluex_metadata_classes.'+table)()
+		for key,value in dictOfAttrs.iteritems():
+			if getattr(newItem,key,None) is not None:
+				setattr(newItem,key,value)
+			else:
+				raise AttributeError('Table {} does not have attribute {}.'.format(table,key))
+		self._session.add(newItem)
 		self._session.commit()
 
 	# updates an existing field's attribute to a new value
