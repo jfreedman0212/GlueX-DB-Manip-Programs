@@ -22,16 +22,13 @@ class DatabaseConnection:
 	# 	   dialect defaults to sqlite if invalid
 	# pathToDB: a string that holds the path to the DB file
 	#	    can be either relative or absolute
-	def __init__(self,dialect,pathToDB=None):
+	def __init__(self,pathToDB='gluex_metadata_db.db',dialect='sqlite'):
 		# verifies the dialect is valid
 		# can add more supported dialects here if necessary
 		if dialect is not 'mysql':
 			dialect = 'sqlite'
 
 		dburl = '{}://'.format(dialect)
-		if pathToDB is None:
-			# gives a default name in the current directory
-			pathToDB = 'gluex_metadata_db.db'
 		if dialect is 'sqlite':
 			pathToDB = '/' + pathToDB
 
