@@ -1,23 +1,18 @@
 #!/usr/bin/env python
 
-##################################################################################
-# query.py: command line program that can manipulate the GlueX Metadata Database #
-# 	    written by Joshua Freedman						 #
-# usage: ./query.py <table> <flags>						 #
-#	table:			      the table that is edited(required)         #
-# 	-a:			      add an empty field	        	 #
-#	-d <index>: 		      delete a field at <index>			 #
-#	-r <index>: 		      retrieve a field at <index>		 #
-#	-e <index> <attr> <newValue>: edits a field				 #
-#	-h,--help:    		      prints out help		     	         #
-#	-v,--verbose: 		      also take a verbose command		 #
-#	--version: 		      prints out the version number		 #
-##################################################################################
+###############################################################################
+# query.py - A command line program for creating, retrieving, updating, and   #
+#	     retrieving data from the GlueX Metadata Database.		      # 
+# Written by Joshua Freedman						      #
+###############################################################################
 
-# import dependencies
 import argparse
 from pydoc import locate
 from gluex_metadata_classes import * 
+
+
+### should be updated to run DatabaseConnection object methods instead of what its currently doing ###
+### update asap ###
 
 # argparse setup
 parser = argparse.ArgumentParser(description='Manipulates/retrieves data from the GlueX Metadata Database')

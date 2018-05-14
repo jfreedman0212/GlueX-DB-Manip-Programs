@@ -9,7 +9,7 @@
 
 # import dependencies
 import argparse
-from gluex_metadata_classes import * 
+from DatabaseConnection import DatabaseConnection
 
 # generating a tuple to be used by the 'metavar' attribute of the create argument,
 # will also be used in the actual create process

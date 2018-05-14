@@ -1,13 +1,13 @@
 ###############################################################################
-# gluex_metadata_classes.py - the SQLAlchemy classes that describe the        #
-#			      GlueX Metadata Database. 			      #
+# gluex_metadata_classes.py - The SQLAlchemy classes that describe the        #
+#			      GlueX Metadata Database based on the schema.    #
 # Written by Joshua Freedman						      #
 ###############################################################################
 
 import os
 import sys
 import consts
-from sqlalchemy import *
+from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy import create_engine

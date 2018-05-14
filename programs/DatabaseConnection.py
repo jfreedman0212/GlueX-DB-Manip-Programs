@@ -1,5 +1,5 @@
 ###############################################################################
-# DatabaseConnection.py - a wrapper class for a SQLAlchemy session so that    #
+# DatabaseConnection.py - A wrapper class for a SQLAlchemy session so that    #
 #			  the user does not have to refer directly to the     #
 #			  session object.				      #
 # Written by Joshua Freedman						      #
@@ -7,6 +7,10 @@
 
 from gluex_metadata_classes import *
 from pydoc import locate
+
+# exception for the constructor to throw
+class InvalidDatabaseURLException(Exception):
+	pass
 
 class DatabaseConnection:
 	### private member data ###
@@ -17,22 +21,13 @@ class DatabaseConnection:
 	### public member functions ###
 
 	# constructor
-	# dialect: a string referring to the type of DB 
-	#	   system being used (currently supports mysql and sqlite)
-	# 	   dialect defaults to sqlite if invalid
-	# pathToDB: a string that holds the path to the DB file
-	#	    can be either relative or absolute
-	def __init__(self,pathToDB='gluex_metadata_db.db',dialect='sqlite'):
-		# verifies the dialect is valid
-		# can add more supported dialects here if necessary
-		if dialect is not 'mysql':
-			dialect = 'sqlite'
-
-		dburl = '{}://'.format(dialect)
-		if dialect is 'sqlite':
-			pathToDB = '/' + pathToDB
-
-		dburl += pathToDB
+	# dburl: the database url, contains information about the dialect
+	#	 and the path. sqlite and mysql support
+	def __init__(self,dburl):
+		# verify that dburl is valid for the specified dialect
+		# if not, raise an exception
+#		if:
+#			raise InvalidDatabaseURLException('{} is invalid'.format(dburl))
 
 		# engine setup
 		self._engine = create_engine(dburl)
@@ -42,7 +37,6 @@ class DatabaseConnection:
 		Base.metadata.bind = self._engine
 		self._session_creator = sessionmaker(bind=self._engine)
 		self._session = self._session_creator()
-
 
 	# creates an entry in the database for the specified table
 	# table: the table that is being acted upon
@@ -54,7 +48,7 @@ class DatabaseConnection:
 			if getattr(newItem,key,None) is not None:
 				setattr(newItem,key,value)
 			else:
-				raise AttributeError('Table {} does not have attribute {}.'.format(table,key))
+				raise AttributeError('{} does not have attribute {}.'.format(table,key))
 		self._session.add(newItem)
 		self._session.commit()
 
@@ -69,7 +63,7 @@ class DatabaseConnection:
 		if getattr(updatedEntry,attr,None) is not None:
 			setattr(updatedEntry,attr,newValue)
 		else:
-			raise AttributeError('Table {} does not have attribute {}'.format(table,attr))
+			raise AttributeError('{} does not have attribute {}'.format(table,attr))
 		self._session.commit()
 
 	# deletes the specified row of the specified table
@@ -92,4 +86,3 @@ class DatabaseConnection:
 	# destructor to close the session whenever the object gets deleted
 	def __del__(self):
 		self._session.close()
-
