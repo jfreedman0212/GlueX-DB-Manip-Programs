@@ -5,8 +5,9 @@
 # Written by Joshua Freedman						      #
 ###############################################################################
 
-from gluex_metadata_classes import *
+import gluex_metadata_classes as gluex_md
 from pydoc import locate
+import re
 
 # exception for the constructor to throw
 class InvalidDatabaseURLException(Exception):
@@ -14,6 +15,7 @@ class InvalidDatabaseURLException(Exception):
 
 class DatabaseConnection:
 	### private member data ###
+
 	_session_creator = None
 	_session = None
 	_engine = None
@@ -24,18 +26,32 @@ class DatabaseConnection:
 	# dburl: the database url, contains information about the dialect
 	#	 and the path. sqlite and mysql support
 	def __init__(self,dburl):
-		# verify that dburl is valid for the specified dialect
-		# if not, raise an exception
-#		if:
-#			raise InvalidDatabaseURLException('{} is invalid'.format(dburl))
-
+		# checks the dialect of dburl and does specific checking for each 
+		# checks to see if they follow the pattern for the dialect
+		if dburl.startswith('mysql'):
+			pattern = 'mysql://.+(?:).*@.+(?:).*/.+'
+			if re.match(pattern,dburl) is None:
+				error_message = '\"{}\" is in an invalid form. '.format(dburl)
+				error_message += 'Should follow this format: \n'
+				error_message += 'mysql://[username]:[password]@[host]:[port]/[file]'
+				raise InvalidDatabaseURLException(error_message)
+		elif dburl.startswith('sqlite'):
+			pattern = 'sqlite:///(.+\.db)*'
+			if re.match(pattern,dburl) is None:
+				error_message = '\"{}\" is in an invalid form. '.format(dburl)
+				error_message += 'Should follow this format: \n'
+				error_message += 'sqlite:///[pathToDatabaseFile].db'
+				raise InvalidDatabaseURLException(error_message)
+		else:
+			raise InvalidDatabaseURLException('\"{}\" is invalid. Dialects mysql and sqlite supported.'.format(dburl))
+		
 		# engine setup
-		self._engine = create_engine(dburl)
-		Base.metadata.create_all(self._engine)
+		self._engine = gluex_md.create_engine(dburl)
+		gluex_md.Base.metadata.create_all(self._engine)
 		
 		# session setup
-		Base.metadata.bind = self._engine
-		self._session_creator = sessionmaker(bind=self._engine)
+		gluex_md.Base.metadata.bind = self._engine
+		self._session_creator = gluex_md.sessionmaker(bind=self._engine)
 		self._session = self._session_creator()
 
 	# creates an entry in the database for the specified table
@@ -80,9 +96,19 @@ class DatabaseConnection:
 	# key: the desired value for that specific attribute
 	def search(self,table,attr,key):
 		tableref = locate('gluex_metadata_classes.'+table)
+		if getattr(tableref(),attr,None) is None:
+			raise AttributeError('{} does not have attribute {}'.format(table,attr))
 		filterQuery = self._session.query(tableref).filter(getattr(tableref,attr) == key)
 		return filterQuery.all()
-	
+
+	# returns an array of all of the entries in a table
+	# table: the table being acted upon
+	def list_all(self,table):
+		tableref = locate('gluex_metadata_classes.' + table)
+		return self._session.query(tableref).all()
+
 	# destructor to close the session whenever the object gets deleted
 	def __del__(self):
-		self._session.close()
+		# checks b/c the __del__ still runs if the constructor raises an error
+		if self._session is not None:
+			self._session.close()

@@ -14,6 +14,15 @@ from gluex_metadata_classes import *
 ### should be updated to run DatabaseConnection object methods instead of what its currently doing ###
 ### update asap ###
 
+### this is only here so that query.py works in the meantime, it will be removed when the program is updated ###
+engine = create_engine(databaseEnv)
+Base.metadata.create_all(engine)
+		
+Base.metadata.bind = engine
+session_creator = sessionmaker(bind=engine)
+session = session_creator()
+
+
 # argparse setup
 parser = argparse.ArgumentParser(description='Manipulates/retrieves data from the GlueX Metadata Database')
 parser.add_argument('table',help='the table that will be manipulated/retrieved from')
