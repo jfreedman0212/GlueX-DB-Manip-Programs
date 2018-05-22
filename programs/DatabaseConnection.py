@@ -36,7 +36,7 @@ class DatabaseConnection:
 				error_message += 'mysql://[username]:[password]@[host]:[port]/[file]'
 				raise InvalidDatabaseURLException(error_message)
 		elif dburl.startswith('sqlite'):
-			pattern = 'sqlite:///(.+\.db)*'
+			pattern = 'sqlite:///.*'
 			if re.match(pattern,dburl) is None:
 				error_message = '\"{}\" is in an invalid form. '.format(dburl)
 				error_message += 'Should follow this format: \n'
