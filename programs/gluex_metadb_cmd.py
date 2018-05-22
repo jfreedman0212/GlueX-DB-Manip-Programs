@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
 ###############################################################################
-# DataSetManip.py - A command line program that manipulates the DataSet table #
-#		    that also updates a webpage every time a new DataSet is   #
-#		    created.						      #
+# gluex_metadb_cmd.py -  A command line program that manipulates the DataSet  #
+#			 table that also updates a webpage every time a       #
+#			 DataSet is created or modified.		      #
 # Written by Joshua Freedman						      #
 ###############################################################################
 
