@@ -26,7 +26,7 @@ tables = [item for item in dir(DBC.gluex_md) if not item.startswith('_') \
 def createDataSet(dbc,arguments):
 	# dictionary that will contain the data needed to create the specified object
 	addedAttrs = {}
-
+	create = True
 	# generates the dictionary with corresponding attributes
 	for attr,arg in zip(attributes,arguments):
 		if attr not in tables:
@@ -38,11 +38,14 @@ def createDataSet(dbc,arguments):
 			except AttributeError:
 				entry = dbc.search(attr,'value',arg)
 			
-			if len(entry) > 0:
+			if len(entry) > 0 and arg is not 'NULL':
 				entryId = entry[0].id
 				addedAttrs[attr + 'Id'] = entryId
+			elif len(entry) == 0:
+				create = False
 	try:
-		dbc.create('DataSet',addedAttrs)
+		if create:
+			dbc.create('DataSet',addedAttrs)
 	except AttributeError as exc:
 		print 'Something went wrong internally. Here is the error message:'
 		print exc
@@ -74,29 +77,34 @@ if args.c is not None:
 
 # procedures for the -f (create DataSets from file) flag
 if args.f is not None:
-	txt_file = open(args.f,'r')
-	for line in txt_file.readlines():
-		arguments = line.split(' ')
-		# this for loop allows for entries to be specified with spaces as long as they
-		# are surrounded by double quotes (")
-		for string in arguments:
-			if string.startswith('\"'):
-				start = arguments.index(string)
-				i = start + 1
-				while True:
-					# could be cleaned up, but works for now
-					if not arguments[i].endswith('\"'):
-						arguments[start] = arguments[start] + ' ' + arguments[i]
-						arguments.pop(i)
-					else:
-						arguments[start] = arguments[start] + ' ' + arguments[i]
-						arguments.pop(i)
-						break
-				arguments[start] = arguments[start].replace('\"','')
-			if '\n' in string:
-				arguments[arguments.index(string)] = arguments[arguments.index(string)].replace('\n','')
-		createDataSet(db,arguments)
-	txt_file.close()
+	txt_file = None
+	try:
+		txt_file = open(args.f,'r')
+	except IOError as exc:
+		print exc
+	else:
+		for line in txt_file.readlines():
+			arguments = line.split(' ')
+			# this for loop allows for entries to be specified with spaces as long as they
+			# are surrounded by double quotes (")
+			for string in arguments:
+				if string.startswith('\"'):
+					start = arguments.index(string)
+					i = start + 1
+					while True:
+						# could be cleaned up, but works for now
+						if not arguments[i].endswith('\"'):
+							arguments[start] = arguments[start] + ' ' + arguments[i]
+							arguments.pop(i)
+						else:
+							arguments[start] = arguments[start] + ' ' + arguments[i]
+							arguments.pop(i)
+							break
+					arguments[start] = arguments[start].replace('\"','')
+				if '\n' in string:
+					arguments[arguments.index(string)] = arguments[arguments.index(string)].replace('\n','')
+			createDataSet(db,arguments)
+		txt_file.close()
 
 #procedures for the -l,--list flag
 if args.list:
