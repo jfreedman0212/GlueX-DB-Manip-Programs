@@ -6,6 +6,8 @@
 # Written by Joshua Freedman							  #
 ###################################################################################
 
+### does not work right now ###
+
 # import dependencies
 import cherrypy
 from gluex_metadata_classes import *
