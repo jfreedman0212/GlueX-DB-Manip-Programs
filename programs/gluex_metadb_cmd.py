@@ -45,13 +45,13 @@ def createDataSet(dbc,arguments):
 			except AttributeError:
 				entry = dbc.search(attr,'value',arg)
 			
-			if len(entry) > 0 and arg is not 'NULL':
-				entryId = entry[0].id
-				addedAttrs[attr + 'Id'] = entryId
-			elif len(entry) == 0:
+			if arg is 'NULL' and len(entry) == 0:
 				create = False
 				print 'Did not create DataSet because \"{0}\" is not a valid \"{1}\". Check \"{1}\" table.'.format(arg,attr)
 				break
+			elif len(entry) > 0:
+				entryId = entry[0].id
+				addedAttrs[attr + 'Id'] = entryId
 	try:
 		if create:
 			dbc.create('DataSet',addedAttrs)
@@ -67,7 +67,7 @@ parser.add_argument('-s', \
 	help='uses the specified URL instead of the environment variable')
 
 parser.add_argument('-c', \
-	metavar=tuple(attributes),
+	metavar=tuple(attributes), \
 	nargs=len(attributes), \
 	help='creates a new DataSet with the specified values for each attribute of it')
 
@@ -125,8 +125,8 @@ if args.f is not None:
 	txt_file = None
 	try:
 		txt_file = open(args.f,'r')
-	except IOError as exc:
-		print exc
+	except IOError:
+		print '\"{}\" does not exist.'.format(args.f)
 	else:
 		for line in txt_file.readlines():
 			arguments = line.split(' ')
