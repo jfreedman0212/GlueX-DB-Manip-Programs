@@ -4,8 +4,6 @@
 # Written by Joshua Freedman						      #
 ###############################################################################
 
-import os
-import consts
 from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
@@ -131,6 +129,3 @@ class DataSet(Base):
 					               self.RunPeriod, self.SoftwareVersion, self.JanaConfig, \
 					               self.JanaCalibContext)
 		return output
-
-# stores the database URL for the env variable
-databaseEnv = os.environ[consts.DB_ENV_VAR]
