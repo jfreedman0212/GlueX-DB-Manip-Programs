@@ -13,30 +13,14 @@ import consts
 import sys
 import os
 
-### useful variables and functions ###
-
-## should probably refactor some of this (and -f flag too), but its fine for now ##
-
-# generating a tuple to be used by the 'metavar' attribute of the create argument,
-# will also be used in the actual create process
-attributes = [a for a in dir(DBC.gluex_md.DataSet()) if not a.startswith('_') \
-	      and a is not 'id'\
-	      and not callable(getattr(DBC.gluex_md.DataSet(),a)) \
-	      and a is not 'metadata' and 'Id' not in a]
-
-# used to determine if an attribute is a reference to another table
-tables = [item for item in dir(DBC.gluex_md) if not item.startswith('_') \
-	  and 'DeclarativeMeta' in type(getattr(DBC.gluex_md,item)).__name__ \
-	  and item is not 'DataSet' and item is not 'Base']
-
 # function that creates a DataSet, used in create from command line and from file
 def createDataSet(dbc,arguments):
 	# dictionary that will contain the data needed to create the specified object
 	addedAttrs = {}
 	create = True
 	# generates the dictionary with corresponding attributes
-	for attr,arg in zip(attributes,arguments):
-		if attr not in tables:
+	for attr,arg in zip(dbc.get_attributes('DataSet'),arguments):
+		if attr not in dbc.get_tables():
 			addedAttrs[attr] = arg
 		else:
 			entry = None
@@ -59,16 +43,37 @@ def createDataSet(dbc,arguments):
 		print 'Something went wrong internally. Here is the error message:'
 		print exc
 
-# argparse setup
+### argparse setup ###
 parser = argparse.ArgumentParser(description='Creates/Lists DataSets')
 
 parser.add_argument('-s', \
 	metavar='DB_URL', \
 	help='uses the specified URL instead of the environment variable')
 
+### procedures for the -s (change database URL) flag ###
+# this goes here so the other arguments can access the attributes of DataSet
+args = None
+if '-s' in sys.argv:
+	index = sys.argv.index('-s') + 1
+	args = parser.parse_args(['-s',sys.argv[index]])
+
+db = None
+try:
+	if args is not None and args.s is not None:
+		db = DBC.DatabaseConnection(args.s)
+	else:
+		db = DBC.DatabaseConnection(os.environ[consts.DB_ENV_VAR])
+except DBC.InvalidDatabaseURLException as exc:
+	print exc
+	sys.exit(1)
+except KeyError:
+	print 'Set the environment variable \"{}\" to a valid database URL.'.format(consts.DB_ENV_VAR)
+	sys.exit(1)
+
+# the rest of the argparse setup
 parser.add_argument('-c', \
-	metavar=tuple(attributes), \
-	nargs=len(attributes), \
+	metavar=tuple(db.get_attributes('DataSet')), \
+	nargs=len(db.get_attributes('DataSet')), \
 	help='creates a new DataSet with the specified values for each attribute of it')
 
 parser.add_argument('-f', \
@@ -91,21 +96,6 @@ if len(sys.argv) == 1:
 	parser.print_help()
 	sys.exit(1)
 
-# the DatabaseConnection object, will interact with the database
-db = None
-
-### procedures for the -s (change database URL) flag ###
-try:
-	if args.s is not None:
-		db = DBC.DatabaseConnection(args.s)
-	else:
-		db = DBC.DatabaseConnection(os.environ[consts.DB_ENV_VAR])
-except DBC.InvalidDatabaseURLException as exc:
-	print exc
-	sys.exit(1)
-except KeyError:
-	print 'Set the environment variable \"{}\" to a valid database URL.'.format(consts.DB_ENV_VAR)
-	sys.exit(1)
 
 ### procedures for the -d (delete) flag ###
 if args.d is not None:

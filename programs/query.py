@@ -6,6 +6,8 @@
 # Written by Joshua Freedman						      #
 ###############################################################################
 
+import os
+import consts
 import argparse
 from pydoc import locate
 from gluex_metadata_classes import * 
@@ -15,7 +17,7 @@ from gluex_metadata_classes import *
 ### update asap ###
 
 ### this is only here so that query.py works in the meantime, it will be removed when the program is updated ###
-engine = create_engine(databaseEnv)
+engine = create_engine(os.environ[consts.DB_ENV_VAR])
 Base.metadata.create_all(engine)
 		
 Base.metadata.bind = engine

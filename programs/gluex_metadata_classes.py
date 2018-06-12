@@ -9,6 +9,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+
 Base = declarative_base()
 
 ### these are the sqlalchemy classes for the metadata DB ###
@@ -129,3 +130,6 @@ class DataSet(Base):
 					               self.RunPeriod, self.SoftwareVersion, self.JanaConfig, \
 					               self.JanaCalibContext)
 		return output
+
+	def data_version_string(self):
+		return '{}_{}_{}'.format(self.DataType,self.RunPeriod,self.revision)

@@ -1,48 +1,50 @@
 #!/usr/bin/env python
 
 ###################################################################################
-# datasets_webpage.py: a simple cherrypy web application that generates a webpage #
-#		       based on the DataSets table of the GlueX Metadata DB.      #
+# datasets_webpage.py - a simple cherrypy web application that generates 	  #
+#			a webpage based on the DataSets table of the GlueX 	  #
+#			Metadata DB.						  #
 # Written by Joshua Freedman							  #
 ###################################################################################
 
-### does not work right now ###
 
-# import dependencies
+import DatabaseConnection as DBC
+import webpage_functions as WPF
 import cherrypy
-from gluex_metadata_classes import *
+import consts
+import sys
+import os
+
+db = None
+try:
+	db = DBC.DatabaseConnection(os.environ[consts.DB_ENV_VAR])
+except DBC.InvalidDatabaseURLException as exc:
+	print exc
+	sys.exit(1)
+except KeyError:
+	print 'Set the environment variable \"{}\" to a valid database URL.'.format(consts.DB_ENV_VAR)
+	sys.exit(1)
 
 class Root:
 	@cherrypy.expose
-	def index(self):
-		outputString = '<html><head><title>GlueX DataSets</title>'
-		outputString +='<style>table {font-family: arial, sans-serif;border-collapse: collapse;width: 100%;}td, th {border: 1px solid #dddddd;text-align: left;padding: 8px;}tr:nth-child(even) {background-color: #dddddd;}</style>'
-		outputString += '</head><body><table>'
-		first = session.query(DataSet).first()
-		items = [a for a in dir(first) if not a.startswith('_') and not 'Id' in a and not callable(getattr(first,a))]
-	
-		outputString += '<tr>' 
-		outputString += '<th>id</th>'
-		outputString += '<th>nickname</th>'
-		outputString += '<th>revision</th>'
-		for item in items:
-			if hasattr(getattr(first,item),'metadata'):
-				outputString += '<th>{}</th>'.format(getattr(first,item).__class__.__name__)
-		outputString += '</tr>'		
+	def index(self,**kwargs):
+		currentRP = None
+		try:
+			currentRP = db.search('RunPeriod','name',kwargs['dropdown'])[0]
+		except KeyError:
+			currentRP = db.list_all('RunPeriod')[0]
 
-		for dataset in session.query(DataSet).all():
-			outputString += '<tr>'
-			outputString += '<td>{}</td>'.format(dataset.id)
-			outputString += '<td>{}</td>'.format(dataset.nickname)
-			outputString += '<td>{}</td>'.format(dataset.revision)
-			for item in items:
-				if hasattr(getattr(dataset,item),'metadata'):
-					if hasattr(getattr(dataset,item),'name'):
-						outputString += '<td>{}</td>'.format(getattr(dataset,item).name)
-					else:
-						outputString += '<td>{}</td>'.format(getattr(dataset,item).value)		
-			outputString += '</tr>'
-		outputString += '</table></body></html>'
-		return outputString
+		RunPeriods = db.list_all('RunPeriod')
+		
+		attrs = [attr for attr in db.get_attributes('DataSet') if attr is not 'RunPeriod']
+		dropdown = WPF.create_dropdown(RunPeriods,currentRP)
+		tb_head = WPF.create_tableheadings(attrs)
+		tb_data = ''
+		for dataset in db.search('RunPeriod','name',currentRP.name)[0].DataSets:
+			data = []
+			for attr in attrs:
+				data.append(getattr(dataset, attr))
+			tb_data += WPF.create_tabledata(data)	
+		return '<b>Run Periods:</b>' + dropdown + WPF.table_wrapper(tb_head + tb_data)	
 if __name__ == '__main__':
 	cherrypy.quickstart(Root(),'/')

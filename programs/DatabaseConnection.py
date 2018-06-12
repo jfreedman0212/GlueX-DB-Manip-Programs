@@ -7,6 +7,8 @@
 
 import gluex_metadata_classes as gluex_md
 from pydoc import locate
+import consts
+import os
 import re
 
 # exception for the constructor to throw
@@ -44,16 +46,14 @@ class DatabaseConnection:
 				raise InvalidDatabaseURLException(error_message)
 		else:
 			raise InvalidDatabaseURLException('\"{}\" is invalid. Dialects mysql and sqlite supported.'.format(dburl))
-		
 		# engine setup
-		self._engine = gluex_md.create_engine(dburl)
+		self._engine = gluex_md.create_engine(dburl,connect_args={'check_same_thread':False})
 		gluex_md.Base.metadata.create_all(self._engine)
-		
 		# session setup
 		gluex_md.Base.metadata.bind = self._engine
 		self._session_creator = gluex_md.sessionmaker(bind=self._engine)
 		self._session = self._session_creator()
-
+	
 	# creates an entry in the database for the specified table
 	# table: the table that is being acted upon
 	# dictOfAttrs: dictionary of attributes that has a key-value pair
@@ -106,6 +106,27 @@ class DatabaseConnection:
 	def list_all(self,table):
 		tableref = locate('gluex_metadata_classes.' + table)
 		return self._session.query(tableref).all()
+	
+	# returns an array of all the attributes for the specified table
+	# these attributes are the ones that should be modified (such as 'name'
+	# or 'comment', not the 'id' or other SQLAlchemy relationships).
+	# table: the table being acted upon
+	def get_attributes(self,table):
+		tableref = locate('gluex_metadata_classes.' + table)
+		attributes = [attr for attr in dir(tableref()) \
+			      if not attr.startswith('_') \
+			      and attr is not 'id' and 'Id' not in attr \
+			      and not callable(getattr(tableref(), attr)) \
+			      and 'DataSets' not in attr \
+			      and attr is not 'metadata' and 'Id' not in attr]
+		return attributes
+	
+	# returns an array of the tables in the database
+	def get_tables(self):
+		tables = [item for item in dir(gluex_md) if not item.startswith('_') \
+			  and 'DeclarativeMeta' in type(getattr(gluex_md,item)).__name__ \
+			  and item is not 'Base']
+		return tables		
 
 	# destructor to close the session whenever the object gets deleted
 	def __del__(self):
