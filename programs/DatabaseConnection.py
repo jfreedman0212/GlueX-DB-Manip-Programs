@@ -6,6 +6,9 @@
 ###############################################################################
 
 import gluex_metadata_classes as gluex_md
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm.exc import NoResultFound
 from pydoc import locate
 import consts
 import os
@@ -15,13 +18,12 @@ import re
 class InvalidDatabaseURLException(Exception):
 	pass
 
+class SpecialNone(object):
+	pass
+
+spn = SpecialNone()
+
 class DatabaseConnection:
-	### private member data ###
-
-	_session_creator = None
-	_session = None
-	_engine = None
-
 	### public member functions ###
 
 	# constructor
@@ -47,11 +49,11 @@ class DatabaseConnection:
 		else:
 			raise InvalidDatabaseURLException('\"{}\" is invalid. Dialects mysql and sqlite supported.'.format(dburl))
 		# engine setup
-		self._engine = gluex_md.create_engine(dburl,connect_args={'check_same_thread':False})
+		self._engine = create_engine(dburl,connect_args={'check_same_thread':False})
 		gluex_md.Base.metadata.create_all(self._engine)
 		# session setup
 		gluex_md.Base.metadata.bind = self._engine
-		self._session_creator = gluex_md.sessionmaker(bind=self._engine)
+		self._session_creator = sessionmaker(bind=self._engine)
 		self._session = self._session_creator()
 	
 	# creates an entry in the database for the specified table
@@ -64,30 +66,45 @@ class DatabaseConnection:
 			if getattr(newItem,key,None) is not None:
 				setattr(newItem,key,value)
 			else:
-				raise AttributeError('{} does not have attribute {}.'.format(table,key))
+				raise AttributeError('\"{}\" does not have attribute \"{}\".'.format(table,key))
 		self._session.add(newItem)
 		self._session.commit()
 
-	# updates an existing field's attribute to a new value
+	# updates an existing field's attribute to a new value,
+	# can throw IndexError if an invalid index is given or
+	# an AttributeError if an invalid attribute is given
 	# table: the table that is being acted upon
 	# index: the index of the table being updated
 	# attr: the attribute of the table entry to be changed
 	# newValue: the new value of the attribute	
 	def update(self,table,index,attr,newValue):
 		tableref = locate('gluex_metadata_classes.' + table)
-		updatedEntry = self._session.query(tableref).filter(tableref.id == index).first()
+		updatedEntry = None
+		try:
+			updatedEntry = self._session.query(tableref).filter(tableref.id == index).one()
+		except NoResultFound:
+			raise IndexError('The index \"{}\" does not exist for table \"{}\".'.format(index,table))
+
 		if getattr(updatedEntry,attr,None) is not None:
 			setattr(updatedEntry,attr,newValue)
 		else:
-			raise AttributeError('{} does not have attribute {}'.format(table,attr))
+			raise AttributeError('\"{}\" does not have attribute \"{}\"'.format(table,attr))
 		self._session.commit()
 
 	# deletes the specified row of the specified table
+	# can throw IndexError if an invalid index is given
 	# table: the table being acted upon
 	# index: the id of the row being deleted
 	def remove(self,table,index):
 		tableref = locate('gluex_metadata_classes.' + table)
-		self._session.query(tableref).filter(tableref.id == index).delete()
+		deletedEntry = self._session.query(tableref).filter(tableref.id == index)
+
+		try:
+			deletedEntry.one()
+		except NoResultFound:
+			raise IndexError('The index \"{}\" does not exist for table \"{}\".'.format(index,table))
+
+		deletedEntry.delete()
 		self._session.commit()
 	
 	# returns all of the elements in a table with the specified value for the specified attribute
@@ -96,8 +113,8 @@ class DatabaseConnection:
 	# key: the desired value for that specific attribute
 	def search(self,table,attr,key):
 		tableref = locate('gluex_metadata_classes.'+table)
-		if getattr(tableref(),attr,None) is None:
-			raise AttributeError('{} does not have attribute {}'.format(table,attr))
+		if getattr(tableref(),attr,spn) is spn:
+			raise AttributeError('\"{}\" does not have attribute \"{}\"'.format(table,attr))
 		filterQuery = self._session.query(tableref).filter(getattr(tableref,attr) == key)
 		return filterQuery.all()
 
@@ -106,12 +123,21 @@ class DatabaseConnection:
 	def list_all(self,table):
 		tableref = locate('gluex_metadata_classes.' + table)
 		return self._session.query(tableref).all()
-	
+
+	# destructor to close the session whenever the object gets deleted
+	def __del__(self):
+		# checks b/c the __del__ still runs if the constructor raises an error
+		if self._session is not None:
+			self._session.close()
+
+	### static methods ###
+
 	# returns an array of all the attributes for the specified table
 	# these attributes are the ones that should be modified (such as 'name'
 	# or 'comment', not the 'id' or other SQLAlchemy relationships).
 	# table: the table being acted upon
-	def get_attributes(self,table):
+	@staticmethod
+	def get_attributes(table):
 		tableref = locate('gluex_metadata_classes.' + table)
 		attributes = [attr for attr in dir(tableref()) \
 			      if not attr.startswith('_') \
@@ -122,14 +148,9 @@ class DatabaseConnection:
 		return attributes
 	
 	# returns an array of the tables in the database
-	def get_tables(self):
+	@staticmethod
+	def get_tables():
 		tables = [item for item in dir(gluex_md) if not item.startswith('_') \
 			  and 'DeclarativeMeta' in type(getattr(gluex_md,item)).__name__ \
 			  and item is not 'Base']
 		return tables		
-
-	# destructor to close the session whenever the object gets deleted
-	def __del__(self):
-		# checks b/c the __del__ still runs if the constructor raises an error
-		if self._session is not None:
-			self._session.close()

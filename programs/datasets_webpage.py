@@ -15,7 +15,6 @@ import consts
 import sys
 import os
 
-db = None
 try:
 	db = DBC.DatabaseConnection(os.environ[consts.DB_ENV_VAR])
 except DBC.InvalidDatabaseURLException as exc:
@@ -40,7 +39,7 @@ class Root:
 		dropdown = WPF.create_dropdown(RunPeriods,currentRP)
 		tb_head = WPF.create_tableheadings(attrs)
 		tb_data = ''
-		for dataset in db.search('RunPeriod','name',currentRP.name)[0].DataSets:
+		for dataset in currentRP.DataSets:
 			data = []
 			for attr in attrs:
 				data.append(getattr(dataset, attr))

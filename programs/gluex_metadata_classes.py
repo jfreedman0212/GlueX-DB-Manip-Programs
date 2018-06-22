@@ -7,8 +7,6 @@
 from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 
 Base = declarative_base()
 
@@ -23,6 +21,9 @@ class DataType(Base):
 
 	def __str__(self):
 		return self.name
+
+	def __repr__(self):
+		return '{}|{}|{}'.format(self.id,self.name,self.comment)
 
 	def __init__(self,n='none',c='none'):
 		super(DataType,self).__init__()
@@ -39,6 +40,9 @@ class RunPeriod(Base):
 	def __str__(self):
 		return self.name
 
+	def __repr__(self):
+		return '{}|{}|{}'.format(self.id,self.name,self.comment)
+
 	def __init__(self,n='none',c='none'):
 		super(RunPeriod,self).__init__()
 		self.name = n
@@ -54,6 +58,9 @@ class SoftwareVersion(Base):
 	def __str__(self):
 		return self.name
 
+	def __repr__(self):
+		return '{}|{}|{}'.format(self.id,self.name,self.comment)
+
 	def __init__(self,n='none',c='none'):
 		super(SoftwareVersion,self).__init__()
 		self.name = n
@@ -66,6 +73,9 @@ class JanaConfig(Base):
 	comment = Column(String(250))
 	content = Column(String(250))
 	DataSets = relationship('DataSet',back_populates='JanaConfig')
+
+	def __repr__(self):
+		return '{}|{}|{}|{}'.format(self.id,self.name,self.comment,self.content)
 
 	def __str__(self):
 		return self.name
@@ -84,6 +94,9 @@ class JanaCalibContext(Base):
 
 	def __str__(self):
 		return self.value
+
+	def __repr__(self):
+		return '{}|{}'.format(self.id,self.value)
 
 	def __init__(self,v='none'):
 		super(JanaCalibContext,self).__init__()
@@ -130,6 +143,9 @@ class DataSet(Base):
 					               self.RunPeriod, self.SoftwareVersion, self.JanaConfig, \
 					               self.JanaCalibContext)
 		return output
+
+	def __repr__(self):
+		return str(self.id) + '|' + self.__str__()
 
 	def data_version_string(self):
 		return '{}_{}_{}'.format(self.DataType,self.RunPeriod,self.revision)

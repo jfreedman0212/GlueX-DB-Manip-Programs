@@ -2,82 +2,109 @@
 
 ###############################################################################
 # query.py - A command line program for creating, retrieving, updating, and   #
-#	     retrieving data from the GlueX Metadata Database.		      # 
+#	     deleting data from the GlueX Metadata Database.		      # 
 # Written by Joshua Freedman						      #
 ###############################################################################
 
 import os
+import sys
 import consts
 import argparse
-from pydoc import locate
-from gluex_metadata_classes import * 
-
-
-### should be updated to run DatabaseConnection object methods instead of what its currently doing ###
-### update asap ###
-
-### this is only here so that query.py works in the meantime, it will be removed when the program is updated ###
-engine = create_engine(os.environ[consts.DB_ENV_VAR])
-Base.metadata.create_all(engine)
-		
-Base.metadata.bind = engine
-session_creator = sessionmaker(bind=engine)
-session = session_creator()
-
+import DatabaseConnection as DBC
 
 # argparse setup
 parser = argparse.ArgumentParser(description='Manipulates/retrieves data from the GlueX Metadata Database')
 parser.add_argument('table',help='the table that will be manipulated/retrieved from')
-parser.add_argument('-a',action='store_true',help='add the specified field to the specified table')
-parser.add_argument('-e',nargs=3,help='edits the specified field from the specified table')
-parser.add_argument('-d',type=int,help='deletes the specified index from the specified table')
-parser.add_argument('-r',type=int,help='retrieves the record of the specified id from the specified table')
-parser.add_argument('-v','--verbose',action='store_true',help='prints out each step of the specified process')
-parser.add_argument('--version',action='version',version='Version 0.1')
+parser.add_argument('-a','--add',nargs='+',metavar='attributeName attributeValue',\
+	help='adds an entry to the specified table with the specified attributes, arguments should be in name value pairs')
+parser.add_argument('-e','--edit',nargs=3,metavar=('index','attribute','newValue'),help='changes the specified index\'s value for the specified attribute')
+parser.add_argument('-d','--delete',type=int,metavar='index',help='deletes the specified index from the specified table')
+parser.add_argument('-s','--search',nargs=2,metavar=('attribute','searchKey'),\
+	help='searches a table for any entries that have the specific attribute value combination and lists them.')
+parser.add_argument('-l','--list',action='store_true',help='lists the contents of the entire table')
+parser.add_argument('-v','--verbose',action='store_true',help='makes processes provide more descriptive output (i.e. if something fails or succeeds)')
 args = parser.parse_args()
 
+# DatabaseConnection object setup
+try:
+	db = DBC.DatabaseConnection(os.environ[consts.DB_ENV_VAR])
+except DBC.InvalidDatabaseURLException as exc:
+	print exc
+	sys.exit(1)
+except KeyError:
+	print 'Set the environment variable \"{}\" to a valid database URL.'.format(consts.DB_ENV_VAR)
+	sys.exit(1)
+
+# checks if the table is a valid table
+if args.table not in db.get_tables():
+	print 'Invalid table. The tables in the database are listed below:\n'
+	for table in db.get_tables():
+		print table
+	sys.exit(1)
+
 # run the add procedures
-# POTENTIAL UPDATE: takes a variable amount of arguments so the user does not need to
-# run the -a command and then the -e command to change it
-if args.a:	
-	session.add(globals()[args.table]())
-	if args.verbose:
-		print 'Added an empty field to the {} table.'.format(args.table)
+if args.add is not None: 
+	if len(args.add) % 2 == 0:
+		for arg in args.add:
+			try:
+				args.add[args.add.index(arg)] = int(arg)
+			except ValueError:
+				pass	
+		dictToAdd = dict(zip(args.add[::2],args.add[1::2]))
+		try:
+			db.create(args.table,dictToAdd)
+		except AttributeError as exc:
+			if args.verbose: 
+				print exc
+	elif args.verbose:
+		print 'Arguments must be supplied in pairs as followed: attribute1 value1 attribute2 value2... and so on.'
 
 # run the delete procedures
-if args.d is not None:
-	deletedRecord = session.query(locate('gluex_metadata_classes.' + args.table)).filter_by(id=int(args.d))
-	if deletedRecord.first() is not None:
+if args.delete is not None:
+	try:
+		db.remove(args.table,args.delete)
+	except IndexError as exc:
 		if args.verbose:
-			print 'Index {} of table {} deleted.'.format(args.d,args.table)	
-		deletedRecord.delete()
-	elif deletedRecord.first() is None and args.verbose:
-		print 'There is no record at index {} for table {}'.format(args.d,args.table)		
+			print exc
+	else:
+		if args.verbose:
+			print 'Successfully deleted index \"{}\" from table \"{}\".'.format(args.delete,args.table)
 
 # run the edit procedures
-if args.e is not None:
-	if args.verbose:
-		print 'Index {} of table {} is being changed...'.format(args.e[0],args.table)
-	editedRecord = session.query(locate('gluex_metadata_classes.'+args.table)).filter_by(id=int(args.e[0])).first()
-	# for now this is fine, but it should be made to accomodate ANY type
-	if type(getattr(editedRecord,args.e[1])) is unicode:
-		setattr(editedRecord,args.e[1],args.e[2])
-	elif type(getattr(editedRecord,args.e[1])) is int:
-		setattr(editedRecord,args.e[1],int(args.e[2]))
-	if args.verbose:
-		print 'Index {} of table {} has the new value: {}'.format(args.e[0],args.table,editedRecord)
+if args.edit is not None:
+	args.edit[0] = int(args.edit[0])
+	try:
+		args.edit[2] = int(args.edit[2])
+	except ValueError:
+		pass	
 
-# run the retrieve procedures
-# POTENTIAL UPDATE: -r takes a range as x,y and it prints out all records with ids in that range
-if args.r is not None:
-	"""for i in range(1,args.r):
-		if i in range(1,session.query(locate('gluex_metadata_classes.'+args.table)).count()+1):
-			print session.query(locate('gluex_metadata_classes.'+args.table)).filter_by(id=i).first()
-		else:
-			print 'End of table'
-			break
-	"""
-	print session.query(locate('gluex_metadata_classes.'+args.table)).filter_by(id=args.r).first()	
-# commits all changes at the end
-# should there be a commit() during every function?
-session.commit()
+	try:
+		db.update(args.table,args.edit[0],args.edit[1],args.edit[2])
+	except (IndexError, AttributeError) as exc:
+		if args.verbose:
+			print exc
+	else:
+		if args.verbose:
+			print 'Successfully updated index \"{}\" from table \"{}\".'.format(args.edit[0],args.table)
+
+# run the search procedures
+if args.search is not None:
+	try:
+		args.search[1] = int(args.search[1])
+	except ValueError:
+		pass
+
+	try:
+		for entry in db.search(args.table,args.search[0],args.search[1]):
+			print repr(entry)
+	except AttributeError as exc:
+		if args.verbose:
+			print exc
+
+# run the list procedures
+if args.list:
+	if not db.list_all(args.table):
+		print args.table + ' table is empty.'
+	else:
+		for entry in db.list_all(args.table):
+			print repr(entry)	

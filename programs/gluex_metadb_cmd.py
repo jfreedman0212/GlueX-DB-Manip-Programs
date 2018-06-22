@@ -50,30 +50,9 @@ parser.add_argument('-s', \
 	metavar='DB_URL', \
 	help='uses the specified URL instead of the environment variable')
 
-### procedures for the -s (change database URL) flag ###
-# this goes here so the other arguments can access the attributes of DataSet
-args = None
-if '-s' in sys.argv:
-	index = sys.argv.index('-s') + 1
-	args = parser.parse_args(['-s',sys.argv[index]])
-
-db = None
-try:
-	if args is not None and args.s is not None:
-		db = DBC.DatabaseConnection(args.s)
-	else:
-		db = DBC.DatabaseConnection(os.environ[consts.DB_ENV_VAR])
-except DBC.InvalidDatabaseURLException as exc:
-	print exc
-	sys.exit(1)
-except KeyError:
-	print 'Set the environment variable \"{}\" to a valid database URL.'.format(consts.DB_ENV_VAR)
-	sys.exit(1)
-
-# the rest of the argparse setup
 parser.add_argument('-c', \
-	metavar=tuple(db.get_attributes('DataSet')), \
-	nargs=len(db.get_attributes('DataSet')), \
+	metavar=tuple(DBC.DatabaseConnection.get_attributes('DataSet')), \
+	nargs=len(DBC.DatabaseConnection.get_attributes('DataSet')), \
 	help='creates a new DataSet with the specified values for each attribute of it')
 
 parser.add_argument('-f', \
@@ -95,6 +74,20 @@ if len(sys.argv) == 1:
 	print 'Proper usage requires at least one argument. See options below:\n\n'
 	parser.print_help()
 	sys.exit(1)
+
+### procedures for the -s (change database URL) flag ###
+try:
+	if args.s is not None:
+		db = DBC.DatabaseConnection(args.s)
+	else:
+		db = DBC.DatabaseConnection(os.environ[consts.DB_ENV_VAR])
+except DBC.InvalidDatabaseURLException as exc:
+	print exc
+	sys.exit(1)
+except KeyError:
+	print 'Set the environment variable \"{}\" to a valid database URL.'.format(consts.DB_ENV_VAR)
+	sys.exit(1)
+
 
 
 ### procedures for the -d (delete) flag ###
