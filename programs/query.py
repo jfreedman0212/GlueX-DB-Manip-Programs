@@ -36,10 +36,10 @@ except KeyError:
 	sys.exit(1)
 
 # checks if the table is a valid table
-if args.table not in db.get_tables():
-	print 'Invalid table. The tables in the database are listed below:\n'
-	for table in db.get_tables():
-		print table
+try:
+	db.check_table(args.table)
+except DBC.TableError as exc:
+	print exc
 	sys.exit(1)
 
 # run the add procedures

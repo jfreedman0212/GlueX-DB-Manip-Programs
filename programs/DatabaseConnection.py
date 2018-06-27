@@ -18,16 +18,18 @@ import re
 class InvalidDatabaseURLException(Exception):
 	pass
 
+# exception raised if an invalid table is given
 class TableError(Exception):
 	pass
-
-
+# a "special none" for special cases where there is no
+# actual value for a specific attribute (couldnt use NoneType
+# because that was a possible value for a database attribute)
 class SpecialNone(object):
 	pass
 
 spn = SpecialNone()
 
-class DatabaseConnection:
+class DatabaseConnection(object):
 	### public member functions ###
 
 	# constructor
@@ -60,11 +62,22 @@ class DatabaseConnection:
 		self._session_creator = sessionmaker(bind=self._engine)
 		self._session = self._session_creator()
 	
+	# if the table is invalid, raises a TableError exception
+	# table: the table being checked
+	def check_table(self,table):
+		if table not in self.get_tables():
+			error_message = '\"{}\" is not a valid table. The valid tables are:'.format(table)
+			for table in self.get_tables():
+				error_message += '\n' + table
+			raise TableError(error_message)
+
+
 	# creates an entry in the database for the specified table
 	# table: the table that is being acted upon
 	# dictOfAttrs: dictionary of attributes that has a key-value pair
 	#	       that corresponds to specific table
 	def create(self,table,dictOfAttrs):
+		self.check_table(table)
 		newItem = locate('gluex_metadata_classes.'+table)()
 		for key,value in dictOfAttrs.iteritems():
 			if getattr(newItem,key,None) is not None:
@@ -82,6 +95,7 @@ class DatabaseConnection:
 	# attr: the attribute of the table entry to be changed
 	# newValue: the new value of the attribute	
 	def update(self,table,index,attr,newValue):
+		self.check_table(table)
 		tableref = locate('gluex_metadata_classes.' + table)
 		updatedEntry = None
 		try:
@@ -100,6 +114,7 @@ class DatabaseConnection:
 	# table: the table being acted upon
 	# index: the id of the row being deleted
 	def remove(self,table,index):
+		self.check_table(table)
 		tableref = locate('gluex_metadata_classes.' + table)
 		deletedEntry = self._session.query(tableref).filter(tableref.id == index)
 
@@ -116,6 +131,7 @@ class DatabaseConnection:
 	# attr: the attribute that is trying to be matched
 	# key: the desired value for that specific attribute
 	def search(self,table,attr,key):
+		self.check_table(table)
 		tableref = locate('gluex_metadata_classes.'+table)
 		if getattr(tableref(),attr,spn) is spn:
 			raise AttributeError('\"{}\" does not have attribute \"{}\"'.format(table,attr))
@@ -125,6 +141,7 @@ class DatabaseConnection:
 	# returns an array of all of the entries in a table
 	# table: the table being acted upon
 	def list_all(self,table):
+		self.check_table(table)
 		tableref = locate('gluex_metadata_classes.' + table)
 		return self._session.query(tableref).all()
 
@@ -133,16 +150,7 @@ class DatabaseConnection:
 		# checks b/c the __del__ still runs if the constructor raises an error
 		if self._session is not None:
 			self._session.close()
-
-	### private helper functions ###
-
-	def _check_table(self,table):
-		if table not in self.get_tables():
-			error_message = '\"{}\" is not a valid table. The valid tables are:'.format(table)
-			for table in self.get_tables():
-				error_message += '\n' + table
-			raise TableError(error_message)
-
+	
 	### static methods ###
 
 	# returns an array of all the attributes for the specified table
@@ -151,6 +159,7 @@ class DatabaseConnection:
 	# table: the table being acted upon
 	@staticmethod
 	def get_attributes(table):
+		self.check_table(table)
 		tableref = locate('gluex_metadata_classes.' + table)
 		attributes = [attr for attr in dir(tableref()) \
 			      if not attr.startswith('_') \
