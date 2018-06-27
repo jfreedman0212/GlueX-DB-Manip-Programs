@@ -53,6 +53,8 @@ if args.add is not None:
 		dictToAdd = dict(zip(args.add[::2],args.add[1::2]))
 		try:
 			db.create(args.table,dictToAdd)
+			if args.verbose:
+				print 'Successfully added an entry into \"{}\" table.'.format(args.table)
 		except AttributeError as exc:
 			if args.verbose: 
 				print exc
@@ -95,8 +97,12 @@ if args.search is not None:
 		pass
 
 	try:
-		for entry in db.search(args.table,args.search[0],args.search[1]):
-			print repr(entry)
+		results = db.search(args.table,args.search[0],args.search[1])
+		if not results:
+			print 'No entries exist in table \"{}\" that match the search criteria.'.format(args.table)
+		else:
+			for entry in results:
+				print repr(entry)
 	except AttributeError as exc:
 		if args.verbose:
 			print exc

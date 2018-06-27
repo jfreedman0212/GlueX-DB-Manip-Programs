@@ -27,11 +27,13 @@ except KeyError:
 class Root:
 	@cherrypy.expose
 	def index(self,**kwargs):
-		currentRP = None
 		try:
 			currentRP = db.search('RunPeriod','name',kwargs['dropdown'])[0]
 		except KeyError:
-			currentRP = db.list_all('RunPeriod')[0]
+			if db.list_all('RunPeriod'):
+				currentRP = db.list_all('RunPeriod')[0]
+			else:
+				return '<h2>GlueX DataSets</h2><p>The table is empty.</p>'	
 
 		RunPeriods = db.list_all('RunPeriod')
 		

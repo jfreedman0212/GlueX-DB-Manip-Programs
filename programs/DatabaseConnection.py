@@ -18,6 +18,10 @@ import re
 class InvalidDatabaseURLException(Exception):
 	pass
 
+class TableError(Exception):
+	pass
+
+
 class SpecialNone(object):
 	pass
 
@@ -129,6 +133,15 @@ class DatabaseConnection:
 		# checks b/c the __del__ still runs if the constructor raises an error
 		if self._session is not None:
 			self._session.close()
+
+	### private helper functions ###
+
+	def _check_table(self,table):
+		if table not in self.get_tables():
+			error_message = '\"{}\" is not a valid table. The valid tables are:'.format(table)
+			for table in self.get_tables():
+				error_message += '\n' + table
+			raise TableError(error_message)
 
 	### static methods ###
 
