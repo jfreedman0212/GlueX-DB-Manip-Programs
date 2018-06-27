@@ -1,36 +1,11 @@
 # GlueX Metadata Database Manipulation Programs
-This repo contains some programs that manipulate the GlueX Metadata Database. They are described below. 
+This repo contains some programs that manipulate the GlueX Metadata Database. They are: query.py, gluex_metadb_cmd.py, and datasets_webpage.py. They are located in the 
+"programs" folder alongside other dependent files.
+# Setup 
 These programs use an environment variable that shows the path to the database file. So, if using bash for example, put this in your .bashrc or .bash_profile before using:
-<code>export GLUEX_DB="path to database file"</code>
-where "path to database file" would be changed to the path of the file.
+<code>export GLUEX_METADATA_DB="databaseURL"</code> The URL takes the form of: "sqlite:///[path to DB file]" or "mysql://[username]:[password]@[host]:[port]/[path]".
+SQLite and MySQL are supported as of now. 
+For more information on how the database URL works, refer to <a href="http://docs.sqlalchemy.org/en/latest/core/engines.html#database-urls">this website</a>
 
-If you want to change the name of the environment variable, change the name of DB_ENV_VAR in consts.py to the desired name.
+If you want to change the name of the environment variable, change the name of DB_ENV_VAR in programs/consts.py to the desired name.
 
-# query.py
-A command line program that manipulates the GlueX Metadata Database using SQLAlchemy.
-The schema of the database is laid out in the "gluex_metadata_classes.py" file.
-
-Usage:
-
-./query.py tablename flags
-
-"tablename" is the name of the table being manipulated
-
-flags are:
-
-	-a: adds an empty field to the table
-
-	-e <index> <attrChanged> <newValue>: changes the record's <attrChanged> attribute at index <index> to <newValue>.
-
-	-d <index>: deletes the record from the table at index <index>
-
-	-r <index>: prints out the record at index <index>
-
-	-h,--help: prints out help
-
-	-v,--verbose: prints out more information
-
-	--version: prints the version number
-
-# DataSetManip.py
-Coming soon
