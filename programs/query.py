@@ -22,6 +22,7 @@ parser.add_argument('-d','--delete',type=int,metavar='index',help='deletes the s
 parser.add_argument('-s','--search',nargs=2,metavar=('attribute','searchKey'),\
 	help='searches a table for any entries that have the specific attribute value combination and lists them.')
 parser.add_argument('-l','--list',action='store_true',help='lists the contents of the entire table')
+parser.add_argument('--show-attributes',action='store_true',help='shows the manipulatable attributes of the specified table')
 parser.add_argument('-v','--verbose',action='store_true',help='makes processes provide more descriptive output (i.e. if something fails or succeeds)')
 args = parser.parse_args()
 
@@ -37,7 +38,7 @@ except KeyError:
 
 # checks if the table is a valid table
 try:
-	db.check_table(args.table)
+	DBC.DatabaseConnection.check_table(args.table)
 except DBC.TableError as exc:
 	print exc
 	sys.exit(1)
@@ -106,6 +107,19 @@ if args.search is not None:
 	except AttributeError as exc:
 		if args.verbose:
 			print exc
+
+# run the show attributes procedures
+if args.show_attributes:
+	print 'Attributes for "{}":'.format(args.table)
+	for attr in db.get_attributes(args.table):
+		if args.table == 'DataSet' and attr in db.get_tables():
+			extra = '*'
+		else:
+			extra = ''
+		print extra + attr
+	if args.table == 'DataSet':
+		print '\n*when manipulating these values of a DataSet, use the record\'s "id" value and add "Id" to the end of attribute name'
+		print 'ex: DataTypeId 1 or SoftwareVersionId 10'
 
 # run the list procedures
 if args.list:
