@@ -37,7 +37,9 @@ class Root:
 
 		RunPeriods = db.list_all('RunPeriod')
 		
-		attrs = [attr for attr in db.get_attributes('DataSet') if attr is not 'RunPeriod']
+		attrs = [attr for attr in db.get_attributes('DataSet') if attr is not 'RunPeriod' and attr is not 'revision' and attr is not 'DataType']
+		attrs.insert(0,'DataType')
+		attrs.insert(1,'revision')
 		dropdown = WPF.create_dropdown(RunPeriods,currentRP)
 		tb_head = WPF.create_tableheadings(attrs)
 		tb_data = ''

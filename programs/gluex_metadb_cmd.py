@@ -36,9 +36,12 @@ def createDataSet(dbc,arguments):
 			elif len(entry) > 0:
 				entryId = entry[0].id
 				addedAttrs[attr + 'Id'] = entryId
+
+	print addedAttrs
 	try:
 		if create:
-			dbc.create('DataSet',addedAttrs)
+			print 'created!'
+#			dbc.create('DataSet',addedAttrs)
 	except AttributeError as exc:
 		print 'Something went wrong internally. Here is the error message:'
 		print exc
@@ -46,20 +49,20 @@ def createDataSet(dbc,arguments):
 ### argparse setup ###
 parser = argparse.ArgumentParser(description='Creates/Lists DataSets')
 
-parser.add_argument('-s', \
+parser.add_argument('-s','--set-url', \
 	metavar='DB_URL', \
 	help='uses the specified URL instead of the environment variable')
 
-parser.add_argument('-c', \
+parser.add_argument('-c','--create', \
 	metavar=tuple(DBC.DatabaseConnection.get_attributes('DataSet')), \
 	nargs=len(DBC.DatabaseConnection.get_attributes('DataSet')), \
 	help='creates a new DataSet with the specified values for each attribute of it')
 
-parser.add_argument('-f', \
+parser.add_argument('-f','--from-file', \
 	metavar='pathToFile', \
 	help='creates DataSets from a file, each line is in the format of the -c flag')
 
-parser.add_argument('-d', \
+parser.add_argument('-d','--delete', \
 	metavar=('DataType','RunPeriod','Revision'), \
 	nargs=3, \
 	help='deletes DataSets with the specified attributes')
@@ -77,8 +80,8 @@ if len(sys.argv) == 1:
 
 ### procedures for the -s (change database URL) flag ###
 try:
-	if args.s is not None:
-		db = DBC.DatabaseConnection(args.s)
+	if args.set_url is not None:
+		db = DBC.DatabaseConnection(args.set_url)
 	else:
 		db = DBC.DatabaseConnection(os.environ[consts.DB_ENV_VAR])
 except DBC.InvalidDatabaseURLException as exc:
@@ -88,28 +91,35 @@ except KeyError:
 	print 'Set the environment variable \"{}\" to a valid database URL.'.format(consts.DB_ENV_VAR)
 	sys.exit(1)
 
-
-
 ### procedures for the -d (delete) flag ###
-if args.d is not None:
-	dataSets = db.search('DataType','name',args.d[0])[0].DataSets
-	dataSets = list(set(dataSets).intersection(db.search('RunPeriod','name',args.d[1])[0].DataSets))
-	dataSets = list(set(dataSets).intersection(db.search('DataSet','revision',args.d[2])))
-	print 'Are you sure you want to delete the following DataSets?'
-	for i in dataSets:
-		print i
-	
+if args.delete is not None:
+	dataSets = db.search('DataType','name',args.delete[0])[0].DataSets
+	dataSets = list(set(dataSets).intersection(db.search('RunPeriod','name',args.delete[1])[0].DataSets))
+	dataSets = list(set(dataSets).intersection(db.search('DataSet','revision',args.delete[2])))
+
+	if dataSets:
+		print 'Are you sure you want to delete the following DataSets? (Y/N)'
+		for i in dataSets:
+			print i
+		answer = raw_input()
+		if answer == 'Y' or answer == 'y' or answer == 'yes' or answer == 'Yes':
+			for dataset in dataSets:
+				db.remove('DataSet',dataset.id)
+		else:
+			print 'Did not delete these DataSets'
+	else:
+		print 'There were no DataSets that met this criteria'
+
 ### procedures for the -c (create DataSet) flag ###
-if args.c is not None:
-	createDataSet(db,args.c)
+if args.create is not None:
+	createDataSet(db,args.create)
 
 ### procedures for the -f flag ###
-if args.f is not None:
-	txt_file = None
+if args.from_file is not None:
 	try:
-		txt_file = open(args.f,'r')
+		txt_file = open(args.from_file,'r')
 	except IOError:
-		print '\"{}\" does not exist.'.format(args.f)
+		print '\"{}\" does not exist.'.format(args.from_file)
 	else:
 		for line in txt_file.readlines():
 			arguments = line.split(' ')
@@ -136,5 +146,8 @@ if args.f is not None:
 
 ### procedures for the -l,--list flag ###
 if args.list:
-	for entry in db.list_all('DataSet'):
-		print entry
+	if db.list_all('DataSet'):
+		for entry in db.list_all('DataSet'):
+			print entry
+	else:
+		print 'There are no DataSets'

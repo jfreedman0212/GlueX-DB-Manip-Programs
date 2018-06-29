@@ -62,16 +62,6 @@ class DatabaseConnection(object):
 		self._session_creator = sessionmaker(bind=self._engine)
 		self._session = self._session_creator()
 	
-	# if the table is invalid, raises a TableError exception
-	# table: the table being checked
-	def check_table(self,table):
-		if table not in self.get_tables():
-			error_message = '\"{}\" is not a valid table. The valid tables are:'.format(table)
-			for table in self.get_tables():
-				error_message += '\n' + table
-			raise TableError(error_message)
-
-
 	# creates an entry in the database for the specified table
 	# table: the table that is being acted upon
 	# dictOfAttrs: dictionary of attributes that has a key-value pair
@@ -151,7 +141,17 @@ class DatabaseConnection(object):
 		if self._session is not None:
 			self._session.close()
 	
-	### static methods ###
+	### static/class methods ###
+
+	# if the table is invalid, raises a TableError exception
+	# table: the table being checked
+	@classmethod
+	def check_table(cls,table):
+		if table not in cls.get_tables():
+			error_message = '\"{}\" is not a valid table. The valid tables are:'.format(table)
+			for table in cls.get_tables():
+				error_message += '\n' + table
+			raise TableError(error_message)
 
 	# returns an array of all the attributes for the specified table
 	# these attributes are the ones that should be modified (such as 'name'
@@ -159,14 +159,14 @@ class DatabaseConnection(object):
 	# table: the table being acted upon
 	@staticmethod
 	def get_attributes(table):
-		self.check_table(table)
+		DatabaseConnection.check_table(table)
 		tableref = locate('gluex_metadata_classes.' + table)
 		attributes = [attr for attr in dir(tableref()) \
 			      if not attr.startswith('_') \
 			      and attr is not 'id' and 'Id' not in attr \
 			      and not callable(getattr(tableref(), attr)) \
 			      and 'DataSets' not in attr \
-			      and attr is not 'metadata' and 'Id' not in attr]
+			      and attr is not 'metadata']
 		return attributes
 	
 	# returns an array of the tables in the database
