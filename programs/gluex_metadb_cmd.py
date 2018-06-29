@@ -37,11 +37,11 @@ def createDataSet(dbc,arguments):
 				entryId = entry[0].id
 				addedAttrs[attr + 'Id'] = entryId
 
-	print addedAttrs
+#	print addedAttrs
 	try:
 		if create:
-			print 'created!'
-#			dbc.create('DataSet',addedAttrs)
+		#	print 'created!'
+			dbc.create('DataSet',addedAttrs)
 	except AttributeError as exc:
 		print 'Something went wrong internally. Here is the error message:'
 		print exc
