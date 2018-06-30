@@ -10,7 +10,7 @@ Additionally, to list all of the records in a table, use the -l/--list flag. An 
 Due to how the argument parsing works internally, specify the table before the -a/--add flag, otherwise it will interpret it as a part of a name-value pair.
 <br /><u>Editing existing records:</u><br />To edit a record with the -e/--edit flag, specify the index of the record, the attribute to be changed, and the new value.
 Generally, it is <code>./query.py (table) -e (index) (attribute) (newValue)</code>An example is given below:<img src="../imgs/edit.png" />
-<br /><u>Searching the database:</u><br />
+<br /><u>[Searching the database:]</u><br />
 
 # gluex_metadb_cmd.py
 This command-line program is used for easier manipulation of the DataSet table, allowing the user to create a DataSet and list all of them.
