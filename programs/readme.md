@@ -6,18 +6,18 @@ This command-line program is for general manipulation of the metadata database. 
 <br />Basic usage of this program goes like this: <code>./query.py (table) (list of flags)</code> where (table) is the table to be 
 used and (list of flags) can be anywhere from one flag to one of each, but must be at least one for proper usage.
 <br /><br />Adding records into the database:<br />To add a record to a table, simply run the -a/--add flag <code>./query.py (table) -a name value (name value)</code>.
-Additionally, to list all of the records in a table, use the -l/--list flag. An example is given below:<img src="../imgs/add.png" /><br />
+Additionally, to list all of the records in a table, use the -l/--list flag. An example is given below:<br /><img src="../imgs/add.png" /><br />
 Due to how the argument parsing works internally, specify the table before the -a/--add flag, otherwise it will interpret it as a part of a name-value pair.
 On the other hand, using other flags after it is valid.
 <br /><br />Editing existing records:<br />To edit a record with the -e/--edit flag, specify the index of the record, the attribute to be changed, and the new value.
-Generally, it is: <code>./query.py (table) -e (index) (attribute) (newValue)</code>. An example is given below:<img src="../imgs/edit.png" />
+Generally, it is: <code>./query.py (table) -e (index) (attribute) (newValue)</code>. An example is given below:<br /><img src="../imgs/edit.png" />
 <br /><br />Searching the database:<br />To search a table, use the -s/--search flag, specifying the attribute and the desired value of that attribute.
 The general usage of it is: <code>./query.py (table) -s (attr) (value)</code>. Running this flag will print a list of all the records that meet the given criteria.
-An example is given below:<img src="../imgs/search.png" />
+An example is given below:<br /><img src="../imgs/search.png" />
 <br /><br />Deleting a record:<br />Deleting a record is simple, use the -d/--delete flag with the index (or id) of the record that you want to delete. General usage is: 
 <code>./query.py (table) -d (index)</code>.
 <br /><br />Extras:<br />When working with the DataSet table and its attributes related to records in other tables, manipulate the corresponding value ending with "Id". 
-An example is given below:<img src="../datasets_actions.png" /><br /><br />
+An example is given below:<br /><img src="../imgs/datasets_actions.png" /><br /><br />
 Additionally, the attributes of a given table can be listed as well, using the --show-attributes flag. 
 
 # gluex_metadb_cmd.py
