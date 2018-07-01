@@ -21,9 +21,10 @@ class InvalidDatabaseURLException(Exception):
 # exception raised if an invalid table is given
 class TableError(Exception):
 	pass
+
 # a "special none" for special cases where there is no
 # actual value for a specific attribute (couldnt use NoneType
-# because that was a possible value for a database attribute)
+# because that was a possible value for some values)
 class SpecialNone(object):
 	pass
 
@@ -70,7 +71,7 @@ class DatabaseConnection(object):
 		self.check_table(table)
 		newItem = locate('gluex_metadata_classes.'+table)()
 		for key,value in dictOfAttrs.iteritems():
-			if getattr(newItem,key,None) is not None:
+			if getattr(newItem,key,spn) is not spn:
 				setattr(newItem,key,value)
 			else:
 				raise AttributeError('\"{}\" does not have attribute \"{}\".'.format(table,key))
@@ -93,7 +94,7 @@ class DatabaseConnection(object):
 		except NoResultFound:
 			raise IndexError('The index \"{}\" does not exist for table \"{}\".'.format(index,table))
 
-		if getattr(updatedEntry,attr,None) is not None:
+		if getattr(updatedEntry,attr,spn) is not spn:
 			setattr(updatedEntry,attr,newValue)
 		else:
 			raise AttributeError('\"{}\" does not have attribute \"{}\"'.format(table,attr))

@@ -18,10 +18,14 @@ An example is given below:<br /><img src="../imgs/search.png" />
 <code>./query.py (table) -d (index)</code>.
 <br /><br />Extras:<br />When working with the DataSet table and its attributes related to records in other tables, manipulate the corresponding value ending with "Id". 
 An example is given below:<br /><img src="../imgs/datasets_actions.png" /><br /><br />
-Additionally, the attributes of a given table can be listed as well, using the --show-attributes flag. 
+If you ever need to see the manipulatable attributes (that is, anything but the id and other DB internals)
+the attributes of a given table can be listed as well, using the --show-attributes flag.
+<br /><br />Additionally, when the -v/--verbose flag is not selected, most errors will pass silently (but not all). Therefore, it is strongly recommended that
+the -v/--verbose flag is selected.
 
 # gluex_metadb_cmd.py
 This command-line program is used for easier manipulation of the DataSet table, allowing the user to create a DataSet and list all of them.
+
 
 # datasets_webpage.py
 This is a simple CherryPy application that displays the DataSet table, organized by its RunPeriod. It uses a built-in python webserver to serve the webpage.
