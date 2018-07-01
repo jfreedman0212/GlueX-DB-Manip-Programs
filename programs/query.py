@@ -56,7 +56,7 @@ if args.add is not None:
 			db.create(args.table,dictToAdd)
 			if args.verbose:
 				print 'Successfully added an entry into \"{}\" table.'.format(args.table)
-		except AttributeError as exc:
+		except (AttributeError,IOError) as exc:
 			if args.verbose: 
 				print exc
 	elif args.verbose:

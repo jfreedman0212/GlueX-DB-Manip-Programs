@@ -28,8 +28,11 @@ def createDataSet(dbc,arguments):
 				entry = dbc.search(attr,'name',arg)
 			except AttributeError:
 				entry = dbc.search(attr,'value',arg)
-			
-			if arg is 'NULL' and len(entry) == 0:
+
+			# valid entries include: 'NULL' or something that is part of the specified table
+			if arg == 'NULL':
+				continue		
+			elif len(entry) == 0:
 				create = False
 				print 'Did not create DataSet because \"{0}\" is not a valid \"{1}\". Check \"{1}\" table.'.format(arg,attr)
 				break
@@ -37,10 +40,8 @@ def createDataSet(dbc,arguments):
 				entryId = entry[0].id
 				addedAttrs[attr + 'Id'] = entryId
 
-#	print addedAttrs
 	try:
 		if create:
-		#	print 'created!'
 			dbc.create('DataSet',addedAttrs)
 	except AttributeError as exc:
 		print 'Something went wrong internally. Here is the error message:'

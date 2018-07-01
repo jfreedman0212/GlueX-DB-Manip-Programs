@@ -64,6 +64,8 @@ class DatabaseConnection(object):
 		self._session = self._session_creator()
 	
 	# creates an entry in the database for the specified table
+	# can raise an IOError if the content field is not given an existing file
+	# can also raise an AttributeError if the attribute specified does not exist
 	# table: the table that is being acted upon
 	# dictOfAttrs: dictionary of attributes that has a key-value pair
 	#	       that corresponds to specific table
@@ -72,6 +74,10 @@ class DatabaseConnection(object):
 		newItem = locate('gluex_metadata_classes.'+table)()
 		for key,value in dictOfAttrs.iteritems():
 			if getattr(newItem,key,spn) is not spn:
+				# checks for content because this field will be entered as
+				# a file name, and should be checked for here
+				if key == 'content':
+					value = open(value,'r').read()
 				setattr(newItem,key,value)
 			else:
 				raise AttributeError('\"{}\" does not have attribute \"{}\".'.format(table,key))
@@ -95,6 +101,10 @@ class DatabaseConnection(object):
 			raise IndexError('The index \"{}\" does not exist for table \"{}\".'.format(index,table))
 
 		if getattr(updatedEntry,attr,spn) is not spn:
+			# checks for content because this field will be entered as
+			# a file name, and should be checked for here
+			if attr == 'content':
+				newValue = open(newValue,'r').read()
 			setattr(updatedEntry,attr,newValue)
 		else:
 			raise AttributeError('\"{}\" does not have attribute \"{}\"'.format(table,attr))
@@ -141,7 +151,7 @@ class DatabaseConnection(object):
 		# checks b/c the __del__ still runs if the constructor raises an error
 		if self._session is not None:
 			self._session.close()
-	
+
 	### static/class methods ###
 
 	# if the table is invalid, raises a TableError exception
