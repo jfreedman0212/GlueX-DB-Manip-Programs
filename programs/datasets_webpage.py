@@ -48,7 +48,12 @@ class Root:
 			for attr in attrs:
 				data.append(getattr(dataset, attr))
 			tb_data += WPF.create_tabledata(data)	
-		style = '<style>th { padding-bottom: 5px; background-color: #aaaaaa;}td { padding-bottom: 5px; }</style>'
+		style = """<style>
+				th { padding-bottom: 5px; background-color: #aaaaaa;}
+				td { padding-bottom: 5px; }
+				.clickable {color:blue;}
+				.clickable:hover {text-decoration: underline; cursor:pointer;}
+			</style>"""
 		return style + '<h2>GlueX DataSets</h2><b>Run Periods:</b>' + dropdown + '<hr />' + WPF.table_wrapper(tb_head + tb_data)	
 if __name__ == '__main__':
 	cherrypy.quickstart(Root(),'/')

@@ -48,6 +48,11 @@ def create_tableheadings(array):
 def create_tabledata(array):
 	out = ''
 	for item in array:
-		out += '<td>{}</td>'.format(str(item))
+		extraAttr = ''
+		try:
+			extraAttr = 'class="clickable" onclick="alert({})"'.format(str(item.content).__repr__())
+		except AttributeError:
+			pass
+		out += '<td {1}>{0}</td>'.format(str(item),extraAttr)
 	return out
 

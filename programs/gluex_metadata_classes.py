@@ -53,14 +53,14 @@ class SoftwareVersion(Base):
 	id = Column(Integer, primary_key=True)
 	name = Column(String(250))
 	comment = Column(String(250))
-	#content = Column(String(250))
+	content = Column(String(250))
 	DataSets = relationship('DataSet',back_populates='SoftwareVersion')
 
 	def __str__(self):
 		return self.name
 
 	def __repr__(self):
-		return '{}|{}|{}'.format(self.id,self.name,self.comment)
+		return '{}|{}|{}|{}'.format(self.id,self.name,self.comment,self.content)
 
 	def __init__(self,n='none',c='none'):
 		super(SoftwareVersion,self).__init__()
