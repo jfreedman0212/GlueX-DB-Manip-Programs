@@ -1,16 +1,15 @@
 ###############################################################################
-# DatabaseConnection.py - A wrapper class for a SQLAlchemy session so that    #
+# databaseconnection.py - A wrapper class for a SQLAlchemy session so that    #
 #			  the user does not have to refer directly to the     #
 #			  session object.				      #
 # Written by Joshua Freedman						      #
 ###############################################################################
 
-import gluex_metadata_classes as gluex_md
+import metadatamodel
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.exc import NoResultFound
-from pydoc import locate
-import consts
+#from pydoc import locate
 import os
 import re
 
@@ -57,9 +56,9 @@ class DatabaseConnection(object):
 			raise InvalidDatabaseURLException('\"{}\" is invalid. Dialects mysql and sqlite supported.'.format(dburl))
 		# engine setup
 		self._engine = create_engine(dburl,connect_args={'check_same_thread':False})
-		gluex_md.Base.metadata.create_all(self._engine)
+		metadatamodel.Base.metadata.create_all(self._engine)
 		# session setup
-		gluex_md.Base.metadata.bind = self._engine
+		metadatamodel.Base.metadata.bind = self._engine
 		self._session_creator = sessionmaker(bind=self._engine)
 		self._session = self._session_creator()
 	
@@ -71,7 +70,7 @@ class DatabaseConnection(object):
 	#	       that corresponds to specific table
 	def create(self,table,dictOfAttrs):
 		self.check_table(table)
-		newItem = locate('gluex_metadata_classes.'+table)()
+		newItem = eval('metadatamodel.'+table+'()')
 		for key,value in dictOfAttrs.iteritems():
 			if getattr(newItem,key,spn) is not spn:
 				# checks for content because this field will be entered as
@@ -93,7 +92,7 @@ class DatabaseConnection(object):
 	# newValue: the new value of the attribute	
 	def update(self,table,index,attr,newValue):
 		self.check_table(table)
-		tableref = locate('gluex_metadata_classes.' + table)
+		tableref = eval('metadatamodel.' + table)
 		updatedEntry = None
 		try:
 			updatedEntry = self._session.query(tableref).filter(tableref.id == index).one()
@@ -116,7 +115,7 @@ class DatabaseConnection(object):
 	# index: the id of the row being deleted
 	def remove(self,table,index):
 		self.check_table(table)
-		tableref = locate('gluex_metadata_classes.' + table)
+		tableref = eval('metadatamodel.' + table)
 		deletedEntry = self._session.query(tableref).filter(tableref.id == index)
 
 		try:
@@ -133,7 +132,7 @@ class DatabaseConnection(object):
 	# key: the desired value for that specific attribute
 	def search(self,table,attr,key):
 		self.check_table(table)
-		tableref = locate('gluex_metadata_classes.'+table)
+		tableref = eval('metadatamodel.'+table)
 		if getattr(tableref(),attr,spn) is spn:
 			raise AttributeError('\"{}\" does not have attribute \"{}\"'.format(table,attr))
 		filterQuery = self._session.query(tableref).filter(getattr(tableref,attr) == key)
@@ -143,7 +142,7 @@ class DatabaseConnection(object):
 	# table: the table being acted upon
 	def list_all(self,table):
 		self.check_table(table)
-		tableref = locate('gluex_metadata_classes.' + table)
+		tableref = eval('metadatamodel.' + table)
 		return self._session.query(tableref).all()
 
 	# destructor to close the session whenever the object gets deleted
@@ -171,7 +170,7 @@ class DatabaseConnection(object):
 	@staticmethod
 	def get_attributes(table):
 		DatabaseConnection.check_table(table)
-		tableref = locate('gluex_metadata_classes.' + table)
+		tableref = eval('metadatamodel.' + table)
 		attributes = [attr for attr in dir(tableref()) \
 			      if not attr.startswith('_') \
 			      and attr is not 'id' and 'Id' not in attr \
@@ -183,7 +182,7 @@ class DatabaseConnection(object):
 	# returns an array of the tables in the database
 	@staticmethod
 	def get_tables():
-		tables = [item for item in dir(gluex_md) if not item.startswith('_') \
-			  and 'DeclarativeMeta' in type(getattr(gluex_md,item)).__name__ \
+		tables = [item for item in dir(metadatamodel) if not item.startswith('_') \
+			  and 'DeclarativeMeta' in type(getattr(metadatamodel,item)).__name__ \
 			  and item is not 'Base']
 		return tables		

@@ -7,11 +7,10 @@
 # Written by Joshua Freedman							  #
 ###################################################################################
 
-
-import DatabaseConnection as DBC
-import webpage_functions as WPF
+from gluex_metadb_utils import databaseconnection as DBC
+from gluex_metadb_utils import webpagefunctions as WPF
+from gluex_metadb_utils import constants as consts
 import cherrypy
-import consts
 import sys
 import os
 

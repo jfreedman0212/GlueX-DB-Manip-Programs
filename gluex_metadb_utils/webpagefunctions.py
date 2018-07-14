@@ -1,5 +1,5 @@
 ###################################################################################
-# webpage_functions.py - some functions used in generating a webpage, intended    #
+# webpagefunctions.py - some functions used in generating a webpage, intended     #
 #			 for the datasets_webpage.py program			  # 
 # Written by Joshua Freedman							  #
 ###################################################################################

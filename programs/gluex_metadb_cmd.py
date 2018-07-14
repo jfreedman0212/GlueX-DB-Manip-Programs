@@ -7,9 +7,9 @@
 # Written by Joshua Freedman						      #
 ###############################################################################
 
-import DatabaseConnection as DBC
+from gluex_metadb_utils import databaseconnection as DBC
+from gluex_metadb_utils import constants as consts
 import argparse
-import consts
 import sys
 import os
 

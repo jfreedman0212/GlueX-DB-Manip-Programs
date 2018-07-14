@@ -1,6 +1,6 @@
 ###############################################################################
-# gluex_metadata_classes.py - The SQLAlchemy classes that describe the        #
-#			      GlueX Metadata Database based on the schema.    #
+# metadatamodel.py - The SQLAlchemy classes that describe the		      #
+#		     GlueX Metadata Database based on the schema.    	      #
 # Written by Joshua Freedman						      #
 ###############################################################################
 

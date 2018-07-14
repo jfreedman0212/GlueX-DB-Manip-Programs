@@ -8,9 +8,9 @@
 
 import os
 import sys
-import consts
 import argparse
-import DatabaseConnection as DBC
+from gluex_metadb_utils import databaseconnection as DBC
+from gluex_metadb_utils import constants as consts
 
 # argparse setup
 parser = argparse.ArgumentParser(description='Manipulates/retrieves data from the GlueX Metadata Database')
