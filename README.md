@@ -6,7 +6,7 @@ These programs use an environment variable that shows the path to the database f
 <code>export GLUEX_METADATA_DB="databaseURL"</code> The URL takes the form of: "sqlite:///[path to DB file]" or "mysql://[username]:[password]@[host]:[port]/[path]".
 SQLite and MySQL are supported as of now. 
 For more information on how the database URL works, refer to <a href="http://docs.sqlalchemy.org/en/latest/core/engines.html#database-urls">the SQLAlchemy documentation on database URLs</a>. Additionally, the PYTHONPATH variable
-must be configured. To do so, put this line in your .bashrc or .bash_profile: <code>export PYTHONPATH="path/to/repo:$PYTHONPATH"</code>
+must be configured. To do so, put this line in your .bashrc or .bash_profile: <code>export PYTHONPATH="path/to/repo:$PYTHONPATH"</code>.
 
-If you want to change the name of the environment variable, change the name of DB_ENV_VAR in programs/consts.py to the desired name.
+If you want to change the name of the environment variable, change the name of DB_ENV_VAR in gluex_metadb_utils/constants.py to the desired name.
 
