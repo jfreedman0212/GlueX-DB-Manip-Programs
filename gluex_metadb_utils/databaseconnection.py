@@ -6,6 +6,7 @@
 ###############################################################################
 
 import metadatamodel
+from metadatamodel import Base
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.exc import NoResultFound
@@ -169,7 +170,10 @@ class DatabaseConnection(object):
 	@staticmethod
 	def get_attributes(table):
 		DatabaseConnection.check_table(table)
-		attributes = [attr.name.split('.',1)[0] for attr in metadatamodel.Base.metadata.tables[table].columns]
+		attributes = [attr.name.split('.',1)[0] for attr
+			      in Base.metadata.tables[table].columns
+			      if attr.name.split('.',1)[0] != 'id'
+			     ]
 		for attr in attributes:
 			if attr.endswith('Id'):
 				index = attributes.index(attr)
@@ -179,4 +183,4 @@ class DatabaseConnection(object):
 	# returns an array of the tables in the database
 	@staticmethod
 	def get_tables():
-		return [table.name for table in metadatamodel.Base.metadata.sorted_tables]
+		return [table.name for table in Base.metadata.sorted_tables]
