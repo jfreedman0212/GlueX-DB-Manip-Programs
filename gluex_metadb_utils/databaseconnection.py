@@ -181,7 +181,4 @@ class DatabaseConnection(object):
 	# returns an array of the tables in the database
 	@staticmethod
 	def get_tables():
-		tables = [item for item in dir(metadatamodel) if not item.startswith('_') \
-			  and 'DeclarativeMeta' in type(getattr(metadatamodel,item)).__name__ \
-			  and item is not 'Base']
-		return tables		
+		return [table.name for table in metadatamodel.Base.metadata.sorted_tables]
