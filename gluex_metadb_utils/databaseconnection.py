@@ -169,13 +169,11 @@ class DatabaseConnection(object):
 	@staticmethod
 	def get_attributes(table):
 		DatabaseConnection.check_table(table)
-		tableref = getattr(metadatamodel, table)
-		attributes = [attr for attr in dir(tableref()) \
-			      if not attr.startswith('_') \
-			      and attr is not 'id' and 'Id' not in attr \
-			      and not callable(getattr(tableref(), attr)) \
-			      and 'DataSets' not in attr \
-			      and attr is not 'metadata']
+		attributes = [attr.name.split('.',1)[0] for attr in metadatamodel.Base.metadata.tables[table].columns]
+		for attr in attributes:
+			if attr.endswith('Id'):
+				index = attributes.index(attr)
+				attributes[index] = attributes[index][:-2]
 		return attributes
 	
 	# returns an array of the tables in the database
