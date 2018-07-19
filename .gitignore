@@ -1,11 +1,12 @@
 # DS_STORE file
 .DS_STORE*
 
-# compiled python file
+# cached python file
 *.pyc
 
 # the gluex database for testing (and potentially for later use)
 *.db
+*.sqlite
 
 # vim swap files
 *.swp
