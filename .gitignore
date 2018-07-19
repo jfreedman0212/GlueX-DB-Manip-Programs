@@ -1,5 +1,10 @@
-# DS_STORE file
+# DS_STORE file, for mac
 .DS_STORE*
+
+# the versions folder for alembic, holds the
+# different versions of the database. should
+# not be in the repository 
+versions
 
 # cached python file
 *.pyc
