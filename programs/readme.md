@@ -1,5 +1,5 @@
 # Programs
-This folder contains some programs along with their dependent files. Usage of the programs is described below.
+This folder contains some programs that utilize the database in some way. Usage of the programs is described below.
 
 # query.py
 This command-line program is for general manipulation of the metadata database. It allows for (mostly) full control of the database.
