@@ -11,6 +11,7 @@ import sys
 import argparse
 from gluex_metadb_utils import databaseconnection as DBC
 from gluex_metadb_utils import constants as consts
+from gluex_metadb_utils import metadatamodel
 
 # argparse setup
 parser = argparse.ArgumentParser(description='Manipulates/retrieves data from the GlueX Metadata Database')
@@ -111,14 +112,18 @@ if args.search is not None:
 # run the show attributes procedures
 if args.show_attributes:
 	print 'Attributes for "{}":'.format(args.table)
+	message = False
 	for attr in db.get_attributes(args.table):
-		if args.table == 'DataSet' and attr in db.get_tables():
-			extra = '*'
-		else:
+		try:
+			getattr(getattr(metadatamodel,args.table),attr + 'Id')
+		except AttributeError:
 			extra = ''
+		else:
+			extra = '*'
+			message = True
 		print extra + attr
-	if args.table == 'DataSet':
-		print '\n*when manipulating these values of a DataSet, use the record\'s "id" value and add "Id" to the end of attribute name'
+	if message is True:
+		print '\n*when manipulating these values, use the record\'s "id" value and add "Id" to the end of attribute name'
 		print 'ex: DataTypeId 1 or SoftwareVersionId 10'
 
 # run the list procedures
