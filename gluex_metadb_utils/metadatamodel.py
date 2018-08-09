@@ -4,13 +4,11 @@
 # Written by Joshua Freedman						      #
 ###############################################################################
 
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import Column, ForeignKey, Integer, String, Text
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 
 Base = declarative_base()
-
-### these are the sqlalchemy classes for the metadata DB ###
 
 class DataType(Base):
 	__tablename__ = 'DataType'
@@ -53,7 +51,7 @@ class SoftwareVersion(Base):
 	id = Column(Integer, primary_key=True)
 	name = Column(String(250))
 	comment = Column(String(250))
-	content = Column(String(250))
+	content = Column(Text)
 	DataSets = relationship('DataSet',back_populates='SoftwareVersion')
 
 	def __str__(self):
@@ -72,7 +70,7 @@ class JanaConfig(Base):
 	id = Column(Integer, primary_key=True)
 	name = Column(String(250))
 	comment = Column(String(250))
-	content = Column(String(250))
+	content = Column(Text)
 	DataSets = relationship('DataSet',back_populates='JanaConfig')
 
 	def __repr__(self):
@@ -108,6 +106,10 @@ class DataSet(Base):
 	id = Column(Integer, primary_key=True)
 	nickname = Column(String(250))
 	revision = Column(String(250))
+
+	# used to track which datasets are derived from
+	parentId = Column(Integer,ForeignKey('DataSet.id'))
+	children = relationship('DataSet',backref=backref('parent',remote_side=[id]))
 
 	# the remaining class members represent the DataSet table's relationships with the other tables
 	# if you want to add another table that DataSet relates to, create the class like the ones above
