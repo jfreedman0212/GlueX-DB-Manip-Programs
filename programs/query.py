@@ -58,9 +58,8 @@ if args.add is not None:
 			if args.verbose:
 				print 'Successfully added an entry into \"{}\" table.'.format(args.table)
 		except (AttributeError,IOError) as exc:
-			if args.verbose: 
-				print exc
-	elif args.verbose:
+			print exc
+	else:
 		print 'Arguments must be supplied in pairs as followed: attribute1 value1 attribute2 value2... and so on.'
 
 # run the delete procedures
@@ -68,8 +67,7 @@ if args.delete is not None:
 	try:
 		db.remove(args.table,args.delete)
 	except IndexError as exc:
-		if args.verbose:
-			print exc
+		print exc
 	else:
 		if args.verbose:
 			print 'Successfully deleted index \"{}\" from table \"{}\".'.format(args.delete,args.table)
@@ -85,8 +83,7 @@ if args.edit is not None:
 	try:
 		db.update(args.table,args.edit[0],args.edit[1],args.edit[2])
 	except (IndexError, AttributeError) as exc:
-		if args.verbose:
-			print exc
+		print exc
 	else:
 		if args.verbose:
 			print 'Successfully updated index \"{}\" from table \"{}\".'.format(args.edit[0],args.table)
@@ -106,8 +103,7 @@ if args.search is not None:
 			for entry in results:
 				print repr(entry)
 	except AttributeError as exc:
-		if args.verbose:
-			print exc
+		print exc
 
 # run the show attributes procedures
 if args.show_attributes:
