@@ -106,8 +106,9 @@ class DataSet(Base):
 	id = Column(Integer, primary_key=True)
 	nickname = Column(String(250))
 	revision = Column(String(250))
+	versionStringTag = Column(String(250))
 
-	# used to track which datasets are derived from
+	# used to track which datasets are derived from which
 	parentId = Column(Integer,ForeignKey('DataSet.id'))
 	children = relationship('DataSet',backref=backref('parent',remote_side=[id]))
 
@@ -149,6 +150,3 @@ class DataSet(Base):
 
 	def __repr__(self):
 		return str(self.id) + '|' + self.__str__()
-
-	def data_version_string(self):
-		return '{}_{}_{}'.format(self.DataType,self.RunPeriod,self.revision)

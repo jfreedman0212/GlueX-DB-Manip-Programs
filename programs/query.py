@@ -13,18 +13,30 @@ from gluex_metadb_utils import databaseconnection as DBC
 from gluex_metadb_utils import constants as consts
 from gluex_metadb_utils import metadatamodel
 
+# all the tables in one string, for epilog
+table_str = ''
+for table in DBC.DatabaseConnection.get_tables():
+	table_str += '  {}\n'.format(table)
+
 # argparse setup
-parser = argparse.ArgumentParser(description='Manipulates/retrieves data from the GlueX Metadata Database')
+parser = argparse.ArgumentParser(description='Manipulates/retrieves data from the GlueX Metadata Database',
+	formatter_class=argparse.RawDescriptionHelpFormatter,
+	epilog='The tables in the database are:\n' + table_str)
 parser.add_argument('table',help='the table that will be manipulated/retrieved from')
-parser.add_argument('-a','--add',nargs='+',metavar='attributeName attributeValue',\
+parser.add_argument('-a','--add',nargs='+',metavar='attributeName attributeValue',
 	help='adds an entry to the specified table with the specified attributes, arguments should be in name value pairs')
-parser.add_argument('-e','--edit',nargs=3,metavar=('index','attribute','newValue'),help='changes the specified index\'s value for the specified attribute')
-parser.add_argument('-d','--delete',type=int,metavar='index',help='deletes the specified index from the specified table')
-parser.add_argument('-s','--search',nargs=2,metavar=('attribute','searchKey'),\
+parser.add_argument('-e','--edit',nargs=3,metavar=('index','attribute','newValue'),
+	help='changes the specified index\'s value for the specified attribute')
+parser.add_argument('-d','--delete',type=int,metavar='index',
+	help='deletes the specified index from the specified table')
+parser.add_argument('-s','--search',nargs=2,metavar=('attribute','searchKey'),
 	help='searches a table for any entries that have the specific attribute value combination and lists them.')
-parser.add_argument('-l','--list',action='store_true',help='lists the contents of the entire table')
-parser.add_argument('--show-attributes',action='store_true',help='shows the manipulatable attributes of the specified table')
-parser.add_argument('-v','--verbose',action='store_true',help='makes processes provide more descriptive output (i.e. if something fails or succeeds)')
+parser.add_argument('-l','--list',action='store_true',
+	help='lists the contents of the entire table')
+parser.add_argument('--show-attributes',action='store_true',
+	help='shows the manipulatable attributes of the specified table')
+parser.add_argument('-v','--verbose',action='store_true',
+	help='prints success messages when operations are successful')
 args = parser.parse_args()
 
 # DatabaseConnection object setup
@@ -121,6 +133,12 @@ if args.show_attributes:
 	if message is True:
 		print '\n*when manipulating these values, use the record\'s "id" value and add "Id" to the end of attribute name'
 		print 'ex: DataTypeId 1 or SoftwareVersionId 10'
+
+# run the list table procedures
+#if args.show_tables:
+#	print ''
+#	for table in db.get_tables():
+#		print table
 
 # run the list procedures
 if args.list:
