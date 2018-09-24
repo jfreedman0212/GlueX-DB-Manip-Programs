@@ -10,7 +10,6 @@ from metadatamodel import Base
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy.sql.expression import or_
 import os
 import re
 
@@ -136,9 +135,7 @@ class DatabaseConnection(object):
 		tableref = getattr(metadatamodel, table)
 		if getattr(tableref(),attr,spn) is spn:
 			raise AttributeError('\"{}\" does not have attribute \"{}\"'.format(table,attr))
-		filterQuery = self._session.query(tableref).filter(or_(
-			getattr(tableref,attr) == key,
-			getattr(tableref,attr).contains(key)))
+		filterQuery = self._session.query(tableref).filter(getattr(tableref,attr) == key)
 		return filterQuery.all()
 
 	# returns an array of all of the entries in a table
