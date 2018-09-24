@@ -132,10 +132,11 @@ class DataSet(Base):
 	JanaCalibContext = relationship('JanaCalibContext',back_populates='DataSets')
 
 	# class methods
-	def __init__(self,nname='No Name',dtid=0,rev='No Version Specified',rpid=0,sftwrverid=0,jcid=0,jccid=0):
+	def __init__(self,nname='No Name',dtid=0,parentid = 0,rev='No Version Specified',rpid=0,sftwrverid=0,jcid=0,jccid=0):
 		super(DataSet,self).__init__()
 		self.nickname = nname
 		self.DataTypeId = dtid
+		self.parentId = parentid
 		self.revision = rev
 		self.RunPeriodId = rpid
 		self.SoftwareVersionId = sftwrverid
@@ -143,7 +144,7 @@ class DataSet(Base):
 		self.JanaCalibContextId = jccid
 
 	def __str__(self):
-		output = '{}|{}|{}|{}|{}|{}|{}'.format(self.nickname,self.revision,self.DataType, \
+		output = '{}|{}|{}|{}|{}|{}|{}|{}|{}'.format(self.nickname,self.revision,self.versionStringTag,self.parent,self.DataType, \
 					               self.RunPeriod, self.SoftwareVersion, self.JanaConfig, \
 					               self.JanaCalibContext)
 		return output
