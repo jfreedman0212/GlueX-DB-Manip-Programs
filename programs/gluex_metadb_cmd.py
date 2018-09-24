@@ -2,13 +2,14 @@
 
 ###############################################################################
 # gluex_metadb_cmd.py -  A command line program that manipulates the DataSet  #
-#			 table that also updates a webpage every time a       #
-#			 DataSet is created or modified.		      #
-# Written by Joshua Freedman						      #
+#			 table that also updates a webpage every time a				      #
+#			 DataSet is created or modified.							      #
+# Written by Joshua Freedman											      #
 ###############################################################################
 
 from gluex_metadb_utils import databaseconnection as DBC
 from gluex_metadb_utils import constants as consts
+from gluex_metadb_utils.metadatamodel import DataSet
 import argparse
 import sys
 import os
@@ -20,21 +21,25 @@ def createDataSet(dbc,arguments):
 	create = True
 	# generates the dictionary with corresponding attributes
 	for attr,arg in zip(dbc.get_attributes('DataSet'),arguments):
-		if attr not in dbc.get_tables():
+		try:
+			getattr(DataSet, attr + 'Id')
+		except AttributeError:			
 			addedAttrs[attr] = arg
 		else:
 			entry = None
-			try:
-				entry = dbc.search(attr,'name',arg)
-			except AttributeError:
-				entry = dbc.search(attr,'value',arg)
-
+			if attr in dbc.get_tables():
+				try:
+					entry = dbc.search(attr,'name',arg)
+				except AttributeError:
+					entry = dbc.search(attr,'value',arg)
+			else:
+					entry = dbc.search('DataSet','nickname',arg)
 			# valid entries include: 'NULL' or something that is part of the specified table
 			if arg == 'NULL':
 				continue		
 			elif len(entry) == 0:
 				create = False
-				print 'Did not create DataSet because \"{0}\" is not a valid \"{1}\". Check \"{1}\" table.'.format(arg,attr)
+				print 'Did not create DataSet because "{0}" is not a valid "{1}". Check "{1}" table.'.format(arg,attr)
 				break
 			elif len(entry) > 0:
 				entryId = entry[0].id
@@ -50,25 +55,25 @@ def createDataSet(dbc,arguments):
 ### argparse setup ###
 parser = argparse.ArgumentParser(description='Creates/Lists DataSets')
 
-parser.add_argument('-s','--set-url', \
-	metavar='DB_URL', \
+parser.add_argument('-s','--set-url', 
+	metavar='DB_URL', 
 	help='uses the specified URL instead of the environment variable')
 
-parser.add_argument('-c','--create', \
-	metavar=tuple(DBC.DatabaseConnection.get_attributes('DataSet')), \
-	nargs=len(DBC.DatabaseConnection.get_attributes('DataSet')), \
+parser.add_argument('-c','--create', 
+	metavar=tuple(DBC.DatabaseConnection.get_attributes('DataSet')), 
+	nargs=len(DBC.DatabaseConnection.get_attributes('DataSet')), 
 	help='creates a new DataSet with the specified values for each attribute of it')
 
-parser.add_argument('-f','--from-file', \
-	metavar='pathToFile', \
+parser.add_argument('-f','--from-file', 
+	metavar='pathToFile', 
 	help='creates DataSets from a file, each line is in the format of the -c flag')
 
-parser.add_argument('-d','--delete', \
-	metavar=('DataType','RunPeriod','Revision'), \
-	nargs=3, \
+parser.add_argument('-d','--delete', 
+	metavar=('DataType','RunPeriod','Revision'), 
+	nargs=3, 
 	help='deletes DataSets with the specified attributes')
 
-parser.add_argument('-l','--list',action='store_true', \
+parser.add_argument('-l','--list',action='store_true', 
 	help='lists all of the DataSets in a user-friendly format')
 
 args = parser.parse_args()
@@ -89,14 +94,14 @@ except DBC.InvalidDatabaseURLException as exc:
 	print exc
 	sys.exit(1)
 except KeyError:
-	print 'Set the environment variable \"{}\" to a valid database URL.'.format(consts.DB_ENV_VAR)
+	print 'Set the environment variable "{}" to a valid database URL.'.format(consts.DB_ENV_VAR)
 	sys.exit(1)
 
 ### procedures for the -d (delete) flag ###
 if args.delete is not None:
-	dataSets = db.search('DataType','name',args.delete[0])[0].DataSets
-	dataSets = list(set(dataSets).intersection(db.search('RunPeriod','name',args.delete[1])[0].DataSets))
-	dataSets = list(set(dataSets).intersection(db.search('DataSet','revision',args.delete[2])))
+	dataSets = set(db.search('DataType','name',args.delete[0])[0].DataSets)
+	dataSets = dataSets.intersection(db.search('RunPeriod','name',args.delete[1])[0].DataSets)
+	dataSets = dataSets.intersection(db.search('DataSet','revision',args.delete[2]))
 
 	if dataSets:
 		print 'Are you sure you want to delete the following DataSets? (Y/N)'
@@ -120,26 +125,26 @@ if args.from_file is not None:
 	try:
 		txt_file = open(args.from_file,'r')
 	except IOError:
-		print '\"{}\" does not exist.'.format(args.from_file)
+		print '"{}" does not exist.'.format(args.from_file)
 	else:
 		for line in txt_file.readlines():
 			arguments = line.split(' ')
 			# this for loop allows for entries to be specified with spaces as long as they
 			# are surrounded by double quotes (")
 			for string in arguments:
-				if string.startswith('\"'):
+				if string.startswith('"'):
 					start = arguments.index(string)
 					i = start + 1
 					while True:
 						# could be cleaned up, but works for now
-						if not arguments[i].endswith('\"'):
+						if not arguments[i].endswith('"'):
 							arguments[start] = arguments[start] + ' ' + arguments[i]
 							arguments.pop(i)
 						else:
 							arguments[start] = arguments[start] + ' ' + arguments[i]
 							arguments.pop(i)
 							break
-					arguments[start] = arguments[start].replace('\"','')
+					arguments[start] = arguments[start].replace('"','')
 				if '\n' in string:
 					arguments[arguments.index(string)] = arguments[arguments.index(string)].replace('\n','')
 			createDataSet(db,arguments)

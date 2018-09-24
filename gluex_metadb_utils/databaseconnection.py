@@ -1,8 +1,8 @@
 ###############################################################################
 # databaseconnection.py - A wrapper class for a SQLAlchemy session so that    #
-#			  the user does not have to refer directly to the     #
-#			  session object.				      #
-# Written by Joshua Freedman						      #
+#			  the user does not have to refer directly to the				  #
+#			  session object.											      #
+# Written by Joshua Freedman						  					      #
 ###############################################################################
 
 import metadatamodel
@@ -10,6 +10,7 @@ from metadatamodel import Base
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.sql.expression import or_
 import os
 import re
 
@@ -135,7 +136,9 @@ class DatabaseConnection(object):
 		tableref = getattr(metadatamodel, table)
 		if getattr(tableref(),attr,spn) is spn:
 			raise AttributeError('\"{}\" does not have attribute \"{}\"'.format(table,attr))
-		filterQuery = self._session.query(tableref).filter(getattr(tableref,attr) == key)
+		filterQuery = self._session.query(tableref).filter(or_(
+			getattr(tableref,attr) == key,
+			getattr(tableref,attr).contains(key)))
 		return filterQuery.all()
 
 	# returns an array of all of the entries in a table
@@ -172,8 +175,7 @@ class DatabaseConnection(object):
 		DatabaseConnection.check_table(table)
 		attributes = [attr.name.split('.',1)[0] for attr
 			      in Base.metadata.tables[table].columns
-			      if attr.name.split('.',1)[0] != 'id'
-			     ]
+			      if attr.name.split('.',1)[0] != 'id']
 		for attr in attributes:
 			if attr.endswith('Id'):
 				index = attributes.index(attr)
